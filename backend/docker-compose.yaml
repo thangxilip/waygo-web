@@ -1,0 +1,46 @@
+version: '3'
+services:
+
+  db:
+    image: mysql:latest
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=timberscada
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE_PORT=3306
+    volumes:
+      - /tmp/app/mysqld:/var/run/mysqld
+      - mysql_data:/var/lib/msql
+    networks:
+      - db_network
+    restart: always
+    ports:
+      - '3306:3306'
+
+
+
+  rest:
+    build: .
+    command: bash -c "python manage.py migrate ; python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - db_network
+    ports:
+      - "8000:8000"
+    restart: always
+
+
+
+networks:
+  db_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+
