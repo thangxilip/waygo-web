@@ -25,7 +25,6 @@ import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 //mui icon
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
-import HistoryIcon from "@mui/icons-material/History";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import ComputerIcon from "@mui/icons-material/Computer";
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
@@ -40,14 +39,9 @@ const routes = [
     path: "/",
   },
   {
-    title: "Ongoing Lots",
+    title: "Lots",
     icon: <PrecisionManufacturingIcon />,
-    path: "/ongoing-lots",
-  },
-  {
-    title: "Historical Lots",
-    icon: <HistoryIcon />,
-    path: "/historical-lots",
+    path: "/lots",
   },
   {
     title: "Statistics",

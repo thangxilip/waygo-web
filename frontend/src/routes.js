@@ -24,15 +24,11 @@ export const routes = (loggedIn = false) => [
         element: <StatusReports />,
       },
       {
-        path: "/ongoing-lots",
+        path: "/lots",
         element: <Lots />,
       },
       {
         path: "/:state/:view/:id",
-        element: <Lots />,
-      },
-      {
-        path: "/historical-lots",
         element: <Lots />,
       },
       {
