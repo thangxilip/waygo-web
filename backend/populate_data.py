@@ -365,7 +365,7 @@ def generate_ongoing_lots(i): # for odd chambers only
                 chamber = i,
                 time = current_time + timedelta(minutes=30),
                 status_code = 0,
-                lot_id = lot.id,
+                lot_id = lot,
                 details =''                
             )
 

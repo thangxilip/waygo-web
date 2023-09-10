@@ -24,9 +24,7 @@ class StatusReport(models.Model):
     )  # auto created when record is added
     status_code = models.IntegerField()  # 0 = operating; >0 = idle
     details = models.CharField(max_length=255)  # reserved
-    lot_id = models.CharField(
-        max_length=100, null=True
-    )  # only has value when status_code = 1
+    lot_id = models.ForeignKey("Lot", on_delete=models.CASCADE, null=True) # only has value when status_code = 1
     details = models.CharField(max_length=100, null=True)
 
 
@@ -94,23 +92,23 @@ class LotData(models.Model):
     lot_id = models.ForeignKey(Lot, on_delete=models.CASCADE)
     time = models.DateTimeField()
     command_name = models.CharField(max_length=100)
-    wbt1 = models.DecimalField(max_digits=6, decimal_places=2)
-    wbt2 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    dbt1 = models.DecimalField(max_digits=6, decimal_places=2)
-    dbt2 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    rh = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    wbt1 = models.FloatField()
+    wbt2 = models.FloatField(null=True)
+    dbt1 = models.FloatField()
+    dbt2 = models.FloatField(null=True)
+    rh = models.FloatField(null=True)
 
-    mc1 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc2 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc3 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc4 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc5 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    mc6 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    mc7 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    mc8 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    amc = models.DecimalField(max_digits=6, decimal_places=2)
-    wood_temp1 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    wood_temp2 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    mc1 = models.FloatField()
+    mc2 = models.FloatField()
+    mc3 = models.FloatField()
+    mc4 = models.FloatField()
+    mc5 = models.FloatField(null=True)
+    mc6 = models.FloatField(null=True)
+    mc7 = models.FloatField(null=True)
+    mc8 = models.FloatField(null=True)
+    amc = models.FloatField()
+    wood_temp1 = models.FloatField(null=True)
+    wood_temp2 = models.FloatField(null=True)
     flaps = models.PositiveSmallIntegerField(
         null=True
     )  # 0 = 'ON'; 1 = 'OFF'. Displayed as 'ON' or 'OFF' in plots
