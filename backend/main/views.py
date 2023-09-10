@@ -1,12 +1,14 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404, HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django.db.models import Q, Sum
+from django.db import transaction
+from django.db.models import Q, Sum, ExpressionWrapper, F, Func, Max, Min
+from django.db.models.fields import DurationField, FloatField
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets, permissions, status
@@ -16,8 +18,10 @@ from rest_framework.response import Response
 from main.filters import LotFilterSet
 from main.models import Lot, LotData, StatusReport
 from main.pagination import CustomPageNumberPagination
-from main.serializers import LotSerializer, LotDataSerializer, StatusReportSerializer, StatusReportListSerializer
-
+from main.serializers import LotSerializer, LotDataSerializer, StatusReportSerializer, StatusReportListSerializer, LotExcelSerializer, LotDataExcelSerializer
+import openpyxl
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
 
 @require_GET
 def get_all_lots(request):
@@ -198,7 +202,7 @@ once the drying lot is completed at the kiln.
 """
 
 
-class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin):
+class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
     permission_classes = (permissions.IsAuthenticated, )
     filter_backends = (DjangoFilterBackend, )
     filterset_class = LotFilterSet
@@ -206,22 +210,58 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
 
     def get_queryset(self):
         if self.request.user.is_superuser:
-            return Lot.objects.all()
+            return Lot.objects.all().order_by("-start_time")
         qs = Lot.objects.filter(company=self.request.user.appuser.company).order_by("-start_time")
         return qs
 
     def get_serializer_class(self):
         return LotSerializer
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
 
+        if self.request.query_params.get('get_all', 'False').lower() == 'true':
+            serializer = self.get_serializer(instance=queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        paginated_queryset = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(instance=paginated_queryset, many=True)
+        data = self.get_paginated_response(serializer.data)
+
+        lot_summary = queryset.aggregate(
+            total_quantity=Sum('quantity'),
+            total_time_in_period=ExpressionWrapper(
+                Max('complete_time') - Min('start_time'),
+                output_field=DurationField()
+            ),
+            total_operation_time=Sum('duration'),
+            occupancy_ratio=ExpressionWrapper(
+                (F('total_operation_time') / F('total_time_in_period')) * 100,
+                output_field=FloatField()
+            )
+        )
+
+        response = {
+            **data.data,
+            "lot_summary": lot_summary
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
+    
     @swagger_auto_schema(
         responses={200: ""}, )
     @action(
         detail=True, methods=['get'], url_name='lot_data', url_path='lot-data'
     )
     def lot_lotdata(self, request, pk=None):
-        lot_data = LotData.objects.filter(lot_id=pk)
+        if self.request.user.is_superuser:
+            lot_data = LotData.objects.filter(lot_id=pk).order_by("-time")
+        else:
+            lot_data = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.appuser.company).order_by("-time")
+    
         if self.request.query_params.get('get_all', 'False').lower() == 'true':
             return Response(LotDataSerializer(instance=lot_data, many=True).data, status=status.HTTP_200_OK)
+
         lot_data = self.paginate_queryset(lot_data)
         data = self.get_paginated_response(LotDataSerializer(instance=lot_data, many=True).data)
         return data
@@ -261,10 +301,49 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         detail=True, methods=['get'], url_name='mark_lot_completed', url_path='mark-lot-completed'
     )
     def mark_lot_completed(self, request, pk=None):
-        completed_lot = Lot.objects.get(id=pk)
-        completed_lot.complete_time = timezone.now().replace(microsecond=0)
-        completed_lot.save()
-        return Response(self.get_serializer(instance=completed_lot).data, status=status.HTTP_200_OK)
+        try:
+            completed_lot = Lot.objects.get(id=pk)
+            completed_lot.complete_time = timezone.now().replace(microsecond=0)
+            completed_lot.save()
+            return Response(self.get_serializer(instance=completed_lot).data, status=status.HTTP_200_OK)
+        except Lot.DoesNotExist:
+            raise Http404
+
+    @swagger_auto_schema(responses={200: ""})
+    @action(
+        detail=False, methods=['get'], url_name='download_lot_excel', url_path='lot-excel', pagination_class=None
+    )
+    def download_lot_excel(self, request):
+        queryset =  self.filter_queryset(self.get_queryset())
+        data = LotExcelSerializer(instance=queryset, many=True).data
+
+        file_name = f'Lot'
+        sheet_name = f'Lot'
+        headers = ['Chamber', 'Lot ID', 'Program', 'Commands', 'Species', 'Quantity', 'Start Time', 'Complete Time', 'Ellapsed']
+        
+        response = export_excel(file_name, sheet_name, headers, data)
+    
+        return response
+    
+    @swagger_auto_schema(
+        responses={200: ""}, )
+    @action(
+        detail=True, methods=['get'], url_name='download_lot_data_excel', url_path='lot-data-excel', filter_backends=[], pagination_class=None
+    )
+    def download_lot_data_excel(self, request, pk=None):
+        if self.request.user.is_superuser:
+            queryset = LotData.objects.filter(lot_id=pk).order_by("-time")
+        else:
+            queryset = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.appuser.company).order_by("-time")
+        
+        data = LotDataExcelSerializer(instance=queryset, many=True).data
+
+        file_name = f'LotData_{pk}'
+        sheet_name = f'LotData-{pk}'
+        headers = ['ID', 'Time', 'Command', 'AMC', 'RH', 'DBT1', 'DBT2', 'WBT1', 'WBT2', 'MC1', 'MC2', 'MC3', 'MC4', 'MC5', 'MC6', 'MC7', 'MC8', 'Wood Temp 1', 'Wood Temp 2', 'Flaps', 'Heat', 'Spray', 'Fan CW', 'Fan CCW', 'Reserved', 'Details']
+        response = export_excel(file_name, sheet_name, headers, data)
+    
+        return response
 
 
 class LotDataViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
@@ -286,6 +365,16 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
         if self.action == 'create':
             return StatusReportSerializer
         return StatusReportListSerializer
+    
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        # Remove old reports of chamber
+        StatusReport.objects.filter(
+            company=request.user.appuser.company,
+            chamber=request.data.get("chamber")
+        ).delete()
+
+        return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(responses={200: ''}, )
     @action(
@@ -373,3 +462,32 @@ def statistic(request):
         'total_use_rate': use_rate_dict})
 
     return Response(data, status=status.HTTP_200_OK)
+
+
+def export_excel(file_name, sheet_name, headers, data):
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{file_name}.xlsx"'
+        
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+    worksheet.title = f"{sheet_name}"
+
+    for col_num, column_title in enumerate(headers, 1):
+        cell = worksheet.cell(row=1, column=col_num)
+        cell.value = column_title
+        cell.font = Font(bold=True)
+
+    for row_num, row in enumerate(data, 2):
+        for col_num, cell_value in enumerate(row.values(), 1):
+            cell = worksheet.cell(row=row_num, column=col_num)
+            cell.value = cell_value
+
+            # Calculate the length of the cell content and set the column width
+            col_letter = get_column_letter(col_num)
+            column_dimension = worksheet.column_dimensions[col_letter]
+            cell_length = len(str(cell_value))
+            if column_dimension.width is None or column_dimension.width < cell_length:
+                column_dimension.width = cell_length
+
+    workbook.save(response)
+    return response

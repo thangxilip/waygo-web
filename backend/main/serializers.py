@@ -29,10 +29,23 @@ class AppUserSerializer(ModelSerializer):
 
 
 class LotSerializer(ModelSerializer):
-
     class Meta:
         model = Lot
         fields = '__all__'
+
+
+class LotExcelSerializer(ModelSerializer):
+
+    class Meta:
+        model = Lot
+        fields = ('chamber', 'id', 'program_name', 'total_commands', 'species', 'quantity', 'start_time', 'complete_time', 'duration')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['start_time'] = instance.start_time.strftime('%d/%m/%Y, %H:%M:%S')
+        if instance.complete_time:
+            data['complete_time'] = instance.complete_time.strftime('%d/%m/%Y, %H:%M:%S')
+        return data
 
 
 class LotDataSerializer(ModelSerializer):
@@ -40,6 +53,31 @@ class LotDataSerializer(ModelSerializer):
     class Meta:
         model = LotData
         fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field_name, field in self.fields.items():
+            if isinstance(field, serializers.FloatField) and field_name in data:
+                field_value = data[field_name]
+                if field_value is not None:
+                    data[field_name] = round(field_value, 2)
+        return data
+
+
+class LotDataExcelSerializer(ModelSerializer):
+
+    class Meta:
+        model = LotData
+        fields = ('id', 'time', 'command_name', 'amc', 'rh', 'dbt1', 'dbt2', 'wbt1', 'wbt2', 'mc1', 'mc2', 'mc3', 'mc4', 'mc5', 'mc6', 'mc7', 'mc8', 'wood_temp1', 'wood_temp2', 'flaps', 'heat', 'spray', 'fan_cw', 'fan_ccw', 'reserved', 'details')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field_name, field in self.fields.items():
+            if isinstance(field, serializers.FloatField) and field_name in data:
+                field_value = data[field_name]
+                if field_value is not None:
+                    data[field_name] = round(field_value, 2)
+        return data
 
 
 class StatusReportListSerializer(ModelSerializer):
