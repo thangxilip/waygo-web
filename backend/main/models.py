@@ -23,8 +23,7 @@ class StatusReport(models.Model):
         auto_now_add=True
     )  # auto created when record is added
     status_code = models.IntegerField()  # 0 = operating; >0 = idle
-    details = models.CharField(max_length=255)  # reserved
-    lot_id = models.ForeignKey("Lot", on_delete=models.CASCADE, null=True) # only has value when status_code = 1
+    lot = models.ForeignKey("Lot", on_delete=models.CASCADE, null=True) # only has value when status_code = 1
     details = models.CharField(max_length=100, null=True)
 
 
@@ -89,7 +88,7 @@ In production these LotData records will be created once an hour via POST
 
 
 class LotData(models.Model):
-    lot_id = models.ForeignKey(Lot, on_delete=models.CASCADE)
+    lot = models.ForeignKey(Lot, on_delete=models.CASCADE, related_name="lot_data")
     time = models.DateTimeField()
     command_name = models.CharField(max_length=100)
     wbt1 = models.FloatField()

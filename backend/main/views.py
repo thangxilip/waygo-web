@@ -7,7 +7,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.db import transaction
-from django.db.models import Q, Sum, ExpressionWrapper, F, Func, Max, Min
+from django.db.models import Q, Sum, ExpressionWrapper, F, Max, Min, Max, Subquery, OuterRef, Count, Prefetch
 from django.db.models.fields import DurationField, FloatField
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
@@ -15,7 +15,7 @@ from rest_framework import mixins, viewsets, permissions, status
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.response import Response
 
-from main.filters import LotFilterSet
+from main.filters import LotFilterSet, StatusReportFilterSet
 from main.models import Lot, LotData, StatusReport
 from main.pagination import CustomPageNumberPagination
 from main.serializers import LotSerializer, LotDataSerializer, StatusReportSerializer, StatusReportListSerializer, LotExcelSerializer, LotDataExcelSerializer
@@ -338,8 +338,8 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         
         data = LotDataExcelSerializer(instance=queryset, many=True).data
 
-        file_name = f'LotData_{pk}'
-        sheet_name = f'LotData-{pk}'
+        file_name = f'Lot_Data_{pk}'
+        sheet_name = f'Lot_Data-{pk}'
         headers = ['ID', 'Time', 'Command', 'AMC', 'RH', 'DBT1', 'DBT2', 'WBT1', 'WBT2', 'MC1', 'MC2', 'MC3', 'MC4', 'MC5', 'MC6', 'MC7', 'MC8', 'Wood Temp 1', 'Wood Temp 2', 'Flaps', 'Heat', 'Spray', 'Fan CW', 'Fan CCW', 'Reserved', 'Details']
         response = export_excel(file_name, sheet_name, headers, data)
     
@@ -353,13 +353,34 @@ class LotDataViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
 
 class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     permission_classes = (permissions.IsAuthenticated, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = StatusReportFilterSet
     pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
         if self.request.user.is_superuser:
-            return StatusReport.objects.all()
-        qs = StatusReport.objects.filter(company=self.request.user.appuser.company)
-        return qs
+            queryset = StatusReport.objects.all()
+        else:
+            queryset = StatusReport.objects.filter(company=self.request.user.appuser.company)
+
+        # Subquery to find the latest report for each chamber
+        latest_report_subquery = (
+            queryset
+            .filter(chamber=OuterRef('chamber'))
+            .order_by('-server_time')
+            .values('id')[:1]
+        )
+
+        # Query to retrieve the latest StatusReport for each distinct chamber
+        queryset = queryset.annotate(
+            latest_id=Subquery(latest_report_subquery)
+        ).filter(id=F('latest_id'))
+
+        queryset = queryset.prefetch_related(Prefetch(
+            "lot", queryset=Lot.objects.prefetch_related(Prefetch("lot_data", queryset=LotData.objects.order_by('-time')))
+        )).order_by('chamber')
+        
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -381,14 +402,66 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
         detail=False, methods=['get'], url_name='chamber_latest_status', url_path='chamber-latest-status'
     )
     def chamber_latest_status(self, request):
-        distinct_chambers = StatusReport.objects.filter(
-            company=self.request.user.appuser.company
-        ).values('chamber').distinct().order_by('chamber')
-        latest_chamber_status = []
-        for chamber in distinct_chambers:
-            latest = StatusReport.objects.filter(chamber=chamber.get('chamber')).order_by('server_time').last()
-            latest_chamber_status.append(latest)
-        return Response(self.get_serializer(instance=latest_chamber_status, many=True).data, status=status.HTTP_200_OK)
+        queryset = self.get_queryset()
+
+        filter_queryset = self.filter_queryset(queryset)
+
+        if self.request.query_params.get('get_all', 'False').lower() == 'true':
+            serializer = self.get_serializer(instance=filter_queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        paginated_queryset = self.paginate_queryset(filter_queryset)
+        
+        serializer = self.get_serializer(instance=paginated_queryset, many=True)
+        data = self.get_paginated_response(serializer.data)
+
+        chamber_summary = queryset.aggregate(
+            total_idle_chambers=Count('chamber', filter=~Q(status_code=0)),
+            total_operating_chambers=Count('chamber', filter=Q(status_code=0)),
+        )
+
+        response = {
+            **data.data,
+            "chamber_summary": chamber_summary
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        responses={200: ""}, )
+    @action(
+        detail=False, methods=['get'], url_name='download_status_report_excel', url_path='excel', filter_backends=[], pagination_class=None
+    )
+    def download_status_report_excel(self, request, pk=None):
+        queryset =  self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(instance=queryset, many=True)
+
+        data = []
+        for item in serializer.data:
+            lot = item.get('lot') or {}
+            lot_data = item.get('latest_lot_data') or {}
+            data.append({
+                'chamber': item.get('chamber'),
+                'status': item.get('status_code'),
+                'last_complete': lot.get('complete_time'),
+                'since_last_complete': "",
+                'last_report': item.get('server_time'),
+                'since_last_report': "",
+                'lot_id': lot.get('id'),
+                'lot_species': lot.get('species'),
+                'lot_quantity': lot.get('quantity'),
+                'latest_lot_data_amc': lot_data.get('amc'),
+                'latest_lot_data_dbt': lot_data.get('dbt'),
+                'latest_lot_data_wbt': lot_data.get('wbt'),
+                'total_time': lot.get('duration'),
+            })
+
+        file_name = f'Status_Report'
+        sheet_name = f'Status_Report'
+        headers = ['Chamber', 'Status', 'Last Complete', 'Since Last Complete', 'Last Report', 'Since Last Report', 'Lot ID', 'Species', 'Quantity', 'AMC', 'DBT', 'WBT', 'Total Time']
+        
+        response = export_excel(file_name, sheet_name, headers, data)
+        return response
 
 
 @swagger_auto_schema(methods=['get'], manual_parameters=[])

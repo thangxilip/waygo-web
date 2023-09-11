@@ -22,10 +22,13 @@ import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import styled from "@emotion/styled";
 import { filterOpertorMap } from "utils/helper";
-import Duration from "./Duration";
 import httpService from "utils/httpServices";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+
 
 const useUtilityClasses = (ownerState) => {
   const { classes } = ownerState;
@@ -81,16 +84,15 @@ const Table = ({ columns, url, queryParams = {}, queryEnabled = true, pageSize =
     enabled: queryEnabled,
   });
 
-  const { count, results, lot_summary: lotSummary } = data || { results: [], count: 0 };
+  const { count, results, chamber_summary: chamberSummary } = data || { results: [], count: 0 };
 
   useEffect(() => {
     setTotal(count);
   }, [count]);
 
   const downloadExcel = () => {
-    const endpoint = type === 'lot' ? Endpoints.exportLotExcel : Endpoints.exportLotDataExcel(lotID)
     httpService
-    .get(endpoint, {
+    .get(Endpoints.exportStatusReportExcel, {
       params: {
         ...queryParams,
         ...query,
@@ -126,18 +128,48 @@ const Table = ({ columns, url, queryParams = {}, queryEnabled = true, pageSize =
     });
   }
 
-  const optionalFields = ['wbt2', 'dbt2', 'rh', 'mc5', 'mc6', 'mc7', 'mc8', 'wood_temp1', 'wood_temp2']
+  const statusFilterOperators = [
+    {
+      label: 'equals',
+      value: "=",
+      getApplyFilterFn: (filterItem) => {
+        if (!filterItem.field || !filterItem.value || !filterItem.operator) {
+          return null;
+        }
+
+        return (params) => {
+          return Number(params.value) === Number(filterItem.value);
+        };
+      },
+      InputComponent: ({ item, applyValue }) => (
+        <Box>
+          <InputLabel id="status-select-label">Value</InputLabel>
+          <Select
+            sx={{background: 'red'}}
+            label="status-select"
+            labelId="status-select-label"
+            value={item.value}
+            onChange={(e) => applyValue({ ...item, value: e.target.value })}
+          >
+            <MenuItem value={"0"}>Operating</MenuItem>
+            <MenuItem value={1}>Idle</MenuItem>
+          </Select>
+        </Box>
+      ),
+    },
+  ];
 
   const columnsWithNewOperators = useMemo(
     () =>
       columns
-      .filter((column) => results && results.some(
-        (item) => !optionalFields.includes(column.field) || (optionalFields.includes(column.field) && !!item[column.field] && item[column.field] !== -1)))
-      .map((column) => ({
+      .map((column) => column.field === 'status_code' ? { 
+        ...column,
+        filterOperators: statusFilterOperators,
+       } : {
         ...column,
         filterOperators: filterOpertorMap[column.type],
-      })),
-    [columns, results]
+      }),
+    [columns]
   );
 
   const handleFilterChange = useCallback((filterModel, details) => {
@@ -275,7 +307,7 @@ const Table = ({ columns, url, queryParams = {}, queryEnabled = true, pageSize =
     );
   }
 
-  const LotSummary = () => (
+  const ChamberSummary = () => (
     <Box
       sx={{
         display: 'flex',
@@ -290,40 +322,20 @@ const Table = ({ columns, url, queryParams = {}, queryEnabled = true, pageSize =
        <Card elevation={3} sx={{pt: 2}}>
         <CardContent>
           <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-            Total quantity
+            Total Idle Chambers
           </Typography>
-          <Typography align="center" variant="h5" >
-            {lotSummary?.total_quantity?.toFixed(2)}
-          </Typography>
-        </CardContent>
-      </Card>
-      <Card elevation={3} sx={{pt: 2}}>
-        <CardContent>
-          <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-            Total time in period
-          </Typography>
-          <Typography align="center" variant="h5" >
-            <Duration durationInSeconds={lotSummary?.total_time_in_period}/>
+          <Typography align="center" variant="h5" color="info.main">
+            {chamberSummary?.total_idle_chambers}
           </Typography>
         </CardContent>
       </Card>
       <Card elevation={3} sx={{pt: 2}}>
         <CardContent>
           <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-          Total operation time
+          Total Operating Chambers
           </Typography>
-          <Typography align="center" variant="h5" >
-            <Duration durationInSeconds={lotSummary?.total_operation_time}/> 
-          </Typography>
-        </CardContent>
-      </Card>
-      <Card elevation={3} sx={{pt: 2}}>
-        <CardContent>
-          <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-          Occupancy Ratio
-          </Typography>
-          <Typography align="center" variant="h5" >
-          {lotSummary?.occupancy_ratio?.toFixed(2)}%
+          <Typography align="center" variant="h5" color="success.main">
+          {chamberSummary?.total_operating_chambers}
           </Typography>
         </CardContent>
       </Card>
@@ -340,7 +352,7 @@ const Table = ({ columns, url, queryParams = {}, queryEnabled = true, pageSize =
  
   return (
     <>
-    {type === "lot" && <LotSummary/>} 
+    <ChamberSummary/>
     <DataGrid
       rows={results || []}
       rowCount={total}

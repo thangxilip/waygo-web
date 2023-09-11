@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, CharField
-
+from rest_framework.serializers import ModelSerializer
 from main.models import Lot, LotData, StatusReport, AppUser, Company
 
 
@@ -81,36 +80,23 @@ class LotDataExcelSerializer(ModelSerializer):
 
 
 class StatusReportListSerializer(ModelSerializer):
-    lot = serializers.SerializerMethodField(read_only=True)
+    lot = LotSerializer()
     latest_lot_data = serializers.SerializerMethodField(read_only=True)
-    last_completed_lot = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = StatusReport
-        fields = '__all__'
-
-    def get_lot(self, instance):
-        lot = None
-        if instance.lot_id:
-            lot_instance = Lot.objects.filter(id=instance.lot_id)
-            lot = LotSerializer(instance=lot_instance[0], many=False).data if lot_instance.exists() else None
-        return lot
+        fields = ('id', 'chamber', 'time', 'server_time', 'status_code', 'details', 'lot', 'latest_lot_data')
 
     def get_latest_lot_data(self, instance):
-        lot_data = None
-        if instance.lot_id:
-            lot_data = LotData.objects.filter(
-                lot_id=instance.lot_id, lot_id__chamber=instance.chamber
-            ).order_by('-time')
-            lot_data = LotDataSerializer(instance=lot_data[0], many=False).data if lot_data.exists() else None
-        return lot_data
-
-    def get_last_completed_lot(self, instance):
-        lot = None
-        if instance.status_code == 1:
-            lot = Lot.objects.filter(chamber=instance.chamber).last()
-        return lot.id if lot else None
-
+        if instance.lot and instance.lot.lot_data.exists():
+            lot_data = instance.lot.lot_data.first()
+            return {
+                'amc': round(lot_data.amc),
+                'dbt': round((lot_data.dbt1 + lot_data.dbt2) / 2.0 if (lot_data.dbt2 is not None and lot_data.dbt2 != -1) else lot_data.dbt1, 2),
+                'wbt': round((lot_data.wbt1 + lot_data.wbt2) / 2.0 if (lot_data.wbt2 is not None and lot_data.wbt2 != -1) else lot_data.wbt1, 2)
+            }
+        return None
+    
 
 class StatusReportSerializer(ModelSerializer):
     class Meta:
