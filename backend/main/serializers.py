@@ -1,7 +1,9 @@
 from django.contrib.auth.models import User
+from main.utils import convert_date_to_string, convert_string_to_date, time_since, calculate_duration
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from main.models import Lot, LotData, StatusReport, AppUser, Company
+import datetime
 
 
 class UserSerializer(ModelSerializer):
@@ -82,10 +84,11 @@ class LotDataExcelSerializer(ModelSerializer):
 class StatusReportListSerializer(ModelSerializer):
     lot = LotSerializer()
     latest_lot_data = serializers.SerializerMethodField(read_only=True)
+    last_completed_lot = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = StatusReport
-        fields = ('id', 'chamber', 'time', 'server_time', 'status_code', 'details', 'lot', 'latest_lot_data')
+        fields = ('id', 'chamber', 'time', 'server_time', 'status_code', 'details', 'lot', 'last_completed_lot', 'latest_lot_data')
 
     def get_latest_lot_data(self, instance):
         if instance.lot and instance.lot.lot_data.exists():
@@ -96,6 +99,30 @@ class StatusReportListSerializer(ModelSerializer):
                 'wbt': round((lot_data.wbt1 + lot_data.wbt2) / 2.0 if (lot_data.wbt2 is not None and lot_data.wbt2 != -1) else lot_data.wbt1, 2)
             }
         return None
+    
+    def get_last_completed_lot(self, instance):
+        lot = None
+        if instance.status_code == 1: # idle
+            lot_instance = Lot.objects.filter(chamber=instance.chamber, company=instance.company).order_by('-complete_time')
+            lot = LotSerializer(instance=lot_instance[0], many=False).data if lot_instance.exists() else None
+        return lot
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        last_completed_lot = data.get('last_completed_lot') or {}
+        complete_time = convert_string_to_date(last_completed_lot.get('complete_time'))
+        if complete_time:
+            data["last_complete"] = convert_date_to_string(complete_time)
+            data["since_last_complete"] = time_since(complete_time)
+
+        if instance.lot:
+            data["total_time"] = calculate_duration(instance.lot.start_time)
+        
+        data["last_report"] = convert_date_to_string(instance.server_time)
+        data["since_last_report"] = time_since(instance.server_time)
+        
+        return data
     
 
 class StatusReportSerializer(ModelSerializer):

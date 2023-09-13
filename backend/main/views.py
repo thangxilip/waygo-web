@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.http import JsonResponse, Http404, HttpResponse
@@ -440,20 +440,21 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
         for item in serializer.data:
             lot = item.get('lot') or {}
             lot_data = item.get('latest_lot_data') or {}
+
             data.append({
                 'chamber': item.get('chamber'),
                 'status': item.get('status_code'),
-                'last_complete': lot.get('complete_time'),
-                'since_last_complete': "",
-                'last_report': item.get('server_time'),
-                'since_last_report': "",
+                'last_complete': item.get('last_complete'),
+                'since_last_complete': item.get('since_last_complete'),
+                'last_report': item.get('last_report'),
+                'since_last_report': item.get('since_last_report'),
                 'lot_id': lot.get('id'),
                 'lot_species': lot.get('species'),
                 'lot_quantity': lot.get('quantity'),
                 'latest_lot_data_amc': lot_data.get('amc'),
                 'latest_lot_data_dbt': lot_data.get('dbt'),
                 'latest_lot_data_wbt': lot_data.get('wbt'),
-                'total_time': lot.get('duration'),
+                'total_time': item.get('total_time')
             })
 
         file_name = f'Status_Report'

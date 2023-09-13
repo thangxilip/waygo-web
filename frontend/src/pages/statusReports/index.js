@@ -5,6 +5,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Table from "./components/Table";
 import dayjs from 'dayjs';
 import Chip from '@mui/material/Chip';
+import relativeTime from "dayjs/plugin/relativeTime";
+import { secondsToDuration } from 'utils/helper';
+
+dayjs.extend(relativeTime);
 
 const StatusReports = () => {
   const navigate = useNavigate();
@@ -22,24 +26,21 @@ const StatusReports = () => {
     {
       field: "status_code",
       headerName: "Status",
-      // flex: 1,
       width: 120,
       sortable: false,
       filterable: true,
-      // type: "number",
       type: "string",
       renderCell: ({ row }) => <Chip size="small" sx={{color: 'white.main', fontWeight: 600, width: 90}} color={row.status_code === 0 ? 'success' : 'info'} label={row.status_code === 0 ? 'Operating' : 'Idle'}/>,
     },
     {
       field: "last_complete",
       headerName: "Last Complete",
-      // flex: 1,
       width: 160,
       sortable: false,
       filterable: false,
-      type: "date",
-      valueGetter: (params) => params.row.lot?.complete_time && new Date(params.row.lot?.complete_time),
-      renderCell: ({ row }) => row.lot?.complete_time && dayjs(row.lot?.complete_time).format("DD/MM/YYYY, HH:mm"),
+      // type: "date",
+      // valueGetter: ({ row }) => row.last_completed_lot?.complete_time && new Date(row.last_completed_lot?.complete_time),
+      // renderCell: ({ row }) => row.last_completed_lot?.complete_time && dayjs(row.last_completed_lot?.complete_time).format("DD/MM/YYYY, HH:mm"),
     },
     {
       field: "since_last_complete",
@@ -48,39 +49,32 @@ const StatusReports = () => {
       // flex: 1,
       width: 200,
       filterable: false,
-      // renderCell: ({ row }) => row.lot?.complete_time && dayjs(row.lot?.complete_time).fromNow(true),
+      // renderCell: ({ row }) => row.last_completed_lot?.complete_time && dayjs(row.last_completed_lot?.complete_time).fromNow(true),
     },
     {
-      field: "server_time",
+      field: "last_report",
       headerName: "Last Report",
       sortable: false,
-      // flex: 1,
       width: 200,
-      type: "date",
+      // type: "date",
       filterable: false,
-      valueGetter: (params) => new Date(params.row.server_time),
-      renderCell: ({ row }) => dayjs(row.server_time).format("DD/MM/YYYY, HH:mm"),
+      // valueGetter: (params) => new Date(params.row.server_time),
+      // renderCell: ({ row }) => dayjs(row.server_time).format("DD/MM/YYYY, HH:mm"),
     },
     {
       field: "since_last_report",
       headerName: "Since Last Report",
       sortable: false,
-      // flex: 1,
       width: 200,
       filterable: false,
-      // valueGetter: (params) => new Date(params.row.server_time),
       // renderCell: ({ row }) => dayjs(row.server_time).fromNow(true),
     },
     {
       field: "lot_id",
       headerName: "Lot ID",
-      // flex: 1,
       width: 150,
       sortable: false,
       filterable: false,
-      // type: "date",
-      // valueGetter: (params) => new Date(params.row.start_time),
-      // renderCell: ({ row }) => dayjs(row.start_time).format("DD/MM/YYYY, HH:mm"),
       valueGetter: ({row}) => row.lot?.id
     },
     {
@@ -88,7 +82,6 @@ const StatusReports = () => {
       headerName: "Species",
       sortable: false,
       filterable: false,
-      // flex: 1,
       width: 170,
       valueGetter: ({row}) => row.lot?.species
     },
@@ -96,7 +89,6 @@ const StatusReports = () => {
       field: "lot_quantity",
       headerName: "Quantity",
       sortable: false,
-      // flex: 1,
       width: 120,
       filterable: false,
       valueGetter: ({row}) => row.lot?.quantity
@@ -105,7 +97,6 @@ const StatusReports = () => {
       field: "latest_lot_data_amc",
       headerName: "AMC",
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
       valueGetter: ({row}) => row.latest_lot_data?.amc
@@ -114,7 +105,6 @@ const StatusReports = () => {
       field: "latest_lot_data_dbt",
       headerName: "DBT",
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
       valueGetter: ({row}) => row.latest_lot_data?.dbt
@@ -123,7 +113,6 @@ const StatusReports = () => {
       field: "latest_lot_data_wbt",
       headerName: "WBT",
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
       valueGetter: ({row}) => row.latest_lot_data?.wbt
@@ -132,10 +121,9 @@ const StatusReports = () => {
       field: "total_time",
       headerName: "Total Time",
       sortable: false,
-      // flex: 1,
       width: 140,
       filterable: false,
-      valueGetter: ({row}) => row.lot?.duration
+      renderCell: ({ row }) => row.lot?.start_time && secondsToDuration(dayjs().diff(dayjs(row.lot?.start_time), 'second'))
     },
 
   ];

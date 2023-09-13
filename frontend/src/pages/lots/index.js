@@ -34,7 +34,7 @@ export const Lots = () => {
             }}
           >Data table</Button>
           <Button
-          startIcon={<BubbleChartIcon/>}
+            startIcon={<BubbleChartIcon/>}
             onClick={() => {
               navigate(`/${name[0]}/plot/${row?.id}`);
             }}
