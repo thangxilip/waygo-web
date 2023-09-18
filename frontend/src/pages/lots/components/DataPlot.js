@@ -15,11 +15,10 @@ import {
   Box,
   Paper,
   Typography,
-  Grid,
   FormControlLabel,
   Checkbox,
-  Container,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const keys = [
   "AMC",
@@ -59,6 +58,7 @@ export const LotsDataPlot = ({ lotID }) => {
   const navigate = useNavigate();
   const [controller] = useArgonController();
   const { darkMode } = controller;
+  const { t } = useTranslation();
 
   const chartRef = useRef();
 
@@ -171,34 +171,34 @@ export const LotsDataPlot = ({ lotID }) => {
       <Box sx={{ mb: 0 }}>
         <Paper elevation={3} sx={{ pt: 2, pb: 2 }}>
           <Box>
-            <Box sx={{display: "flex", flexDirection: "row", gap: 5, ml: 2}}>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: 5, ml: 2 }}>
               <Box>
                 <Typography sx={{ fontSize: 12 }} color="text.secondary">
-                  Chamber
+                  {t("chamber")}
                 </Typography>
                 <Typography variant="body2" color="text.primary" gutterBottom>
                   {lotData?.chamber}
                 </Typography>
               </Box>
-              <Box >
+              <Box>
                 <Typography sx={{ fontSize: 12 }} color="text.secondary">
-                  Lot
+                  {t("lot")}
                 </Typography>
                 <Typography variant="body2" color="text.primary" gutterBottom>
                   {lotData?.id}
                 </Typography>
               </Box>
-              <Box >
+              <Box>
                 <Typography sx={{ fontSize: 12 }} color="text.secondary">
-                  Species
+                  {t("species")}
                 </Typography>
                 <Typography variant="body2" color="text.primary" gutterBottom>
                   {lotData?.species}
                 </Typography>
               </Box>
-              <Box >
+              <Box>
                 <Typography sx={{ fontSize: 12 }} color="text.secondary">
-                  Program
+                  {t("program")}
                 </Typography>
                 <Typography variant="body2" color="text.primary" gutterBottom>
                   {lotData?.program_name}
@@ -233,7 +233,7 @@ export const LotsDataPlot = ({ lotID }) => {
                           "&.Mui-checked": {
                             borderColor: colors[index],
                             backgroundColor: colors[index],
-                            border: 'none',
+                            border: "none",
                             backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -1 22 22'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 10l3 3l6-6'/%3e%3c/svg%3e")`,
                           },
                         }}

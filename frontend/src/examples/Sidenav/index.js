@@ -26,44 +26,45 @@ import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import ComputerIcon from "@mui/icons-material/Computer";
-import HelpCenterIcon from "@mui/icons-material/HelpCenter";
+import { useTranslation } from "react-i18next";
 
 // Argon Dashboard 2 MUI context
 import { useArgonController, setMiniSidenav } from "context";
 
-const routes = [
-  {
-    title: "Status Reports",
-    icon: <SummarizeIcon />,
-    path: "/",
-  },
-  {
-    title: "Lots",
-    icon: <PrecisionManufacturingIcon />,
-    path: "/lots",
-  },
-  {
-    title: "Statistics",
-    icon: <AssessmentIcon />,
-    path: "/statistics",
-  },
-  {
-    title: "Technology",
-    icon: <ComputerIcon />,
-    path: "/technology",
-  },
-  {
-    title: "Help",
-    icon: <HelpCenterIcon />,
-    path: "/help",
-  },
-];
 function Sidenav({ color, brand, brandName, ...rest }) {
   const [controller, dispatch] = useArgonController();
   const { miniSidenav, darkSidenav, layout } = controller;
   const location = useLocation();
   const { pathname } = location;
+  const { t } = useTranslation();
+
+  const routes = [
+    {
+      title: t("statusReport"),
+      icon: <SummarizeIcon />,
+      path: "/",
+    },
+    {
+      title: t("lots"),
+      icon: <PrecisionManufacturingIcon />,
+      path: "/lots",
+    },
+    {
+      title: t("statistics"),
+      icon: <AssessmentIcon />,
+      path: "/statistics",
+    },
+    // {
+    //   title: "Technology",
+    //   icon: <ComputerIcon />,
+    //   path: "/technology",
+    // },
+    // {
+    //   title: "Help",
+    //   icon: <HelpCenterIcon />,
+    //   path: "/help",
+    // },
+  ];
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
 

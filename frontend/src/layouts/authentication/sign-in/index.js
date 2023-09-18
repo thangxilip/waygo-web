@@ -14,22 +14,22 @@ import { Endpoints } from "utils/httpServices";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
-import waygoPng from "assets/images/waygo.png";
-
+import waygoImg from "assets/images/waygo.png";
+import { useTranslation } from "react-i18next";
 
 const initialValues = {
   userName: "",
   password: "",
 };
 
-const validations = yup.object().shape({
-  userName: yup.string().required("Please enter user name"),
-  password: yup.string().required("Please enter password"),
-});
-
 function SignIn() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [notValidUser, setNotValidUser] = useState("");
+  const validations = yup.object().shape({
+    userName: yup.string().required(t("pleaseEnterUserName")),
+    password: yup.string().required(t("pleaseEnterPassword")),
+  });
   const { values, errors, touched, handleChange, handleSubmit, handleBlur } =
     useFormik({
       initialValues: initialValues,
@@ -52,20 +52,17 @@ function SignIn() {
     });
   return (
     <CoverLayout
-      //title="Welcome!"
-      //description="Use these awesome forms to login or create new account in your project for free."
-      image={waygoPng}
+      image={waygoImg}
       imgPosition="top"
       button={{ color: "dark", variant: "gradient" }}
     >
       <Card>
-        <ArgonBox sx={{ backgroundImage: `url(${waygoPng})` }}></ArgonBox>      
+        <ArgonBox sx={{ backgroundImage: `url(${waygoImg})` }}></ArgonBox>
         <ArgonBox p={3} mb={1} textAlign="center">
           <ArgonTypography variant="h5" fontWeight="light">
-            Please log in
+            {t("pleaseLogIn")}
           </ArgonTypography>
         </ArgonBox>
-
 
         <ArgonBox pb={3} px={3}>
           <ArgonBox component="form" role="form">
@@ -74,7 +71,7 @@ function SignIn() {
                 sx={{ border: "1px solid" }}
                 id="userName"
                 type="text"
-                placeholder="User Name"
+                placeholder={t("username")}
                 value={values.userName}
                 onChange={(e) => {
                   handleChange(e);
@@ -98,7 +95,7 @@ function SignIn() {
               <ArgonInput
                 id="password"
                 type="password"
-                placeholder="Password"
+                placeholder={t("password")}
                 value={values.password}
                 onChange={(e) => {
                   handleChange(e);
@@ -126,7 +123,7 @@ function SignIn() {
                   marginLeft: "0.5rem",
                 }}
               >
-                {notValidUser}
+                {t("invalidUsernameOrPassword")}
               </ArgonTypography>
             )}
             <ArgonBox mt={4} mb={1}>
@@ -137,7 +134,7 @@ function SignIn() {
                 fullWidth
                 onClick={handleSubmit}
               >
-                Log In
+                {t("logIn")}
               </ArgonButton>
             </ArgonBox>
           </ArgonBox>

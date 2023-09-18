@@ -6,17 +6,19 @@ import Chart from "react-apexcharts";
 import { Endpoints } from "utils/httpServices";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { Grid } from "@mui/material";
+import { Grid, Paper, Typography } from "@mui/material";
 import { useArgonController } from "context";
-import ArgonTypography from "components/ArgonTypography";
 import print from "assets/images/print.svg";
+import { secondsToDuration } from "utils/helper";
+import { useTranslation } from "react-i18next";
 
 const Statistics = () => {
   const [controller] = useArgonController();
   const { darkMode } = controller;
 
-  const [start, setStart] = React.useState();
-  const [end, setEnd] = React.useState();
+  const [start, setStart] = React.useState(dayjs().subtract(1, "month"));
+  const [end, setEnd] = React.useState(dayjs());
+  const { t } = useTranslation();
 
   const [options, setOptions] = useState({
     theme: {
@@ -44,7 +46,9 @@ const Statistics = () => {
       type: "category",
     },
     plotOptions: {
-      bar: {},
+      bar: {
+        columnWidth: 40,
+      },
     },
     colors: ["#2E93fA", "#66DA26", "#546E7A", "#7be3af", "#c5206ab5"],
   });
@@ -70,11 +74,13 @@ const Statistics = () => {
   );
 
   return (
-    <ArgonBox sx={{ height: "100%", width: "100%" }}>
+    <Paper sx={{ p: 3, height: "100%", width: "100%" }}>
       <ArgonBox sx={{ gap: "10px", display: "flex", flexWrap: "wrap" }}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <ArgonBox display="flex" flexDirection="column">
-            <ArgonTypography>Start Date</ArgonTypography>
+            <Typography mb={1} variant="caption">
+              {t("startDate")}
+            </Typography>
             <DatePicker
               value={start}
               onChange={(newValue) => setStart(newValue)}
@@ -82,7 +88,9 @@ const Statistics = () => {
             />
           </ArgonBox>
           <ArgonBox display="flex" flexDirection="column">
-            <ArgonTypography>End Date</ArgonTypography>
+            <Typography mb={1} variant="caption">
+              {t("endDate")}
+            </Typography>
             <DatePicker
               value={end}
               onChange={(newValue) => setEnd(newValue)}
@@ -92,18 +100,24 @@ const Statistics = () => {
         </LocalizationProvider>
       </ArgonBox>
       {data ? (
-        <Grid container spacing={4} sx={{ marginTop: "2rem" }}>
+        <Grid container spacing={4} sx={{ marginTop: 0 }}>
           <Grid item xs={12}>
-            <ArgonTypography>
-              Wood of selected species dry out in the time frame (in cubic
-              meters)
-            </ArgonTypography>
             <Chart
               height="300px"
-              options={options}
+              options={{
+                ...options,
+                title: {
+                  text: t("statisticsChart1"),
+                  style: {
+                    fontSize: 16,
+                    fontFamily: "inherit",
+                    fontWeight: 500,
+                  },
+                },
+              }}
               series={[
                 {
-                  name: "Species",
+                  name: t("quantity"),
                   data: data?.total_wood_dried,
                   type: "bar",
                 },
@@ -111,16 +125,22 @@ const Statistics = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <ArgonTypography>
-              Total quantity have the selected chambers dried in the time frame
-              (in cubic meters, regardless of species)
-            </ArgonTypography>
             <Chart
               height="300px"
-              options={options}
+              options={{
+                ...options,
+                title: {
+                  text: t("statisticsChart2"),
+                  style: {
+                    fontSize: 16,
+                    fontFamily: "inherit",
+                    fontWeight: 500,
+                  },
+                },
+              }}
               series={[
                 {
-                  name: "Chambers",
+                  name: t("quantity"),
                   data: data?.total_chamber_quantity_dried,
                   type: "bar",
                 },
@@ -128,13 +148,19 @@ const Statistics = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <ArgonTypography>
-              Chambers be in operation, operation vs idle time
-            </ArgonTypography>
             <Chart
               height="400px"
               options={{
                 ...options,
+                title: {
+                  text: t("statisticsChart3"),
+                  style: {
+                    fontSize: 16,
+                    fontFamily: "inherit",
+                    fontWeight: 500,
+                  },
+                },
+                colors: ["#66DA26", "#2E93fA"],
                 chart: {
                   ...options.chart,
                   stacked: true,
@@ -145,6 +171,13 @@ const Statistics = () => {
                   ...options.xaxis,
                   categories: Object.keys(data?.operation_time),
                 },
+                yaxis: {
+                  labels: {
+                    formatter: (value) => {
+                      return secondsToDuration(value, "");
+                    },
+                  },
+                },
                 plotOptions: {
                   ...options.plotOptions,
                   bar: {
@@ -154,14 +187,20 @@ const Statistics = () => {
                       position: "top",
                       total: {
                         enabled: true,
-                        formatter: (p, { seriesIndex, dataPointIndex, w }) => {
-                          let idle = w?.config?.series[1]?.data[dataPointIndex];
-                          if (idle && p) {
-                            let op = parseFloat(p);
-                            idle = parseFloat(idle);
-                            const total = op + idle;
+                        formatter: (
+                          value,
+                          { seriesIndex, dataPointIndex, w }
+                        ) => {
+                          let operationTime =
+                            w?.config?.series[0]?.data[dataPointIndex];
+                          let idleTime =
+                            w?.config?.series[1]?.data[dataPointIndex];
+                          if (idleTime && operationTime) {
+                            operationTime = parseFloat(operationTime);
+                            idleTime = parseFloat(idleTime);
+                            const total = operationTime + idleTime;
                             return `${
-                              Math.round(((total - idle) / total) * 10000) / 100
+                              Math.round((operationTime / total) * 10000) / 100
                             } %`;
                           }
                           return "0 %";
@@ -173,12 +212,12 @@ const Statistics = () => {
               }}
               series={[
                 {
-                  name: "Operation Time",
+                  name: t("operationTime"),
                   data: Object.values(data?.operation_time),
                   type: "bar",
                 },
                 {
-                  name: "Idle Time",
+                  name: t("idleTime"),
                   data: Object.values(data?.idle_time),
                   type: "bar",
                 },
@@ -187,7 +226,7 @@ const Statistics = () => {
           </Grid>
         </Grid>
       ) : null}
-    </ArgonBox>
+    </Paper>
   );
 };
 

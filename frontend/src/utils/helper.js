@@ -1,5 +1,6 @@
 import { GridFilterInputValue } from "@mui/x-data-grid";
 import { GridFilterDateInput } from "./dateOperator";
+import i18n from 'configs/i18n';
 
 export const removeAuthToken = () => {
   localStorage.clear();
@@ -16,15 +17,16 @@ export const getChamberStatus = (code) => {
   else return "Idle";
 };
 
-export const secondsToDuration = (seconds) => {
+export const secondsToDuration = (seconds, d=i18n.t("days")) => {
   const days = Math.floor(seconds / (60 * 60 * 24));
   seconds %= 60 * 60 * 24;
   const hours = Math.floor(seconds / (60 * 60));
   seconds %= 60 * 60;
   const minutes = Math.floor(seconds / 60);
   seconds %= 60;
+  seconds = Math.floor(seconds);
 
-  const formattedDays = days > 0 ? `${days} days` : '';
+  const formattedDays = days > 0 ? `${days} ${d}` : '';
   const formattedHours = `${hours}`.padStart(2, '0');
   const formattedMinutes = `${minutes}`.padStart(2, '0');
   const formattedSeconds = `${seconds}`.padStart(2, '0');
@@ -35,28 +37,38 @@ export const secondsToDuration = (seconds) => {
   return parts.join(' ');
 }
 
+export const langToLocale = (language) => {
+  if (language === 'vi') {
+    return 'viVN';
+  }
+  if (language === 'en') {
+    return 'enUS'
+  }
+  return language;
+}
+
 const typeEqualsOperator = {
-  label: "equals",
+  label: i18n.t("equals"),
   value: "=",
   InputComponent: GridFilterInputValue,
 };
 const dateGreaterOperator = {
-  label: "greater than",
+  label: i18n.t("greaterThan"),
   value: "__gt",
   InputComponent: GridFilterDateInput,
 };
 const dateGreaterEqualsOperator = {
-  label: "greater than equals",
+  label: i18n.t("greaterThanEquals"),
   value: "__gte",
   InputComponent: GridFilterDateInput,
 };
 const dateLessEqualsOperator = {
-  label: "less than equals",
+  label: i18n.t("lessThanEquals"),
   value: "__lte",
   InputComponent: GridFilterDateInput,
 };
 const dateLessOperator = {
-  label: "less than",
+  label: i18n.t("lessThan"),
   value: "__lt",
   InputComponent: GridFilterDateInput,
 };

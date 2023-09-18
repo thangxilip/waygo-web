@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 import Sidenav from "examples/Sidenav";
 import { useArgonController, setMiniSidenav } from "context";
 import { useState } from "react";
-import waygoPng from "assets/images/waygo.png";
+import waygoImg from "assets/images/waygo.png";
 import ArgonBox from "components/ArgonBox";
 import { useMediaQuery } from "@mui/material";
 
@@ -35,7 +35,7 @@ function Default() {
       <DashboardLayout>
         <Sidenav
           color={sidenavColor}
-          brand={waygoPng}
+          brand={waygoImg}
           onMouseEnter={handleOnMouseEnter}
           onMouseLeave={handleOnMouseLeave}
         />

@@ -1,21 +1,21 @@
 import ArgonBox from "components/ArgonBox";
-import ArgonButton from "components/ArgonButton";
-import ArgonTypography from "components/ArgonTypography";
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Endpoints } from "utils/httpServices";
 import { LotsDataTable } from "./components/DataTable";
 import { LotsDataPlot } from "./components/DataPlot";
 import Table from "./components/Table";
-import { Button, Paper, Box, Typography } from "@mui/material";
-import TableViewIcon from '@mui/icons-material/TableView';
-import BubbleChartIcon from '@mui/icons-material/BubbleChart';
-import dayjs from 'dayjs';
+import { Button } from "@mui/material";
+import TableViewIcon from "@mui/icons-material/TableView";
+import BubbleChartIcon from "@mui/icons-material/BubbleChart";
+import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 export const Lots = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id, view } = useParams();
+  const { t } = useTranslation();
 
   const name = location.pathname.split("/").slice(1);
 
@@ -28,39 +28,43 @@ export const Lots = () => {
       renderCell: ({ row }) => (
         <ArgonBox gap="5px" sx={{ width: "100%", display: "flex" }}>
           <Button
-            startIcon={<TableViewIcon/>}
+            startIcon={<TableViewIcon />}
             onClick={() => {
               navigate(`/${name[0]}/data/${row?.id}`);
             }}
-          >Data table</Button>
+          >
+            {t("dataTable")}
+          </Button>
           <Button
-            startIcon={<BubbleChartIcon/>}
+            startIcon={<BubbleChartIcon />}
             onClick={() => {
               navigate(`/${name[0]}/plot/${row?.id}`);
             }}
-          >Data plot</Button>
+          >
+            {t("dataPlot")}
+          </Button>
         </ArgonBox>
       ),
     },
     {
       field: "chamber",
-      headerName: "Chamber",
+      headerName: t("chamber"),
       width: 140,
       type: "string",
       sortable: false,
     },
     {
       field: "id",
-      headerName: "Lot ID",
+      headerName: t("lotId"),
       // flex: 1,
       width: 155,
       sortable: false,
       filterable: false,
     },
-    
+
     {
       field: "program_name",
-      headerName: "Program",
+      headerName: t("program"),
       // flex: 1,
       width: 210,
       sortable: false,
@@ -68,7 +72,7 @@ export const Lots = () => {
     },
     {
       field: "total_commands",
-      headerName: "Commands",
+      headerName: t("commands"),
       sortable: false,
       // flex: 1,
       width: 110,
@@ -76,7 +80,7 @@ export const Lots = () => {
     },
     {
       field: "species",
-      headerName: "Species",
+      headerName: t("species"),
       sortable: false,
       // flex: 1,
       width: 135,
@@ -84,7 +88,7 @@ export const Lots = () => {
     },
     {
       field: "quantity",
-      headerName: "Quantity",
+      headerName: t("quantity"),
       sortable: false,
       // flex: 1,
       width: 110,
@@ -92,36 +96,37 @@ export const Lots = () => {
     },
     {
       field: "start_time",
-      headerName: "Start Time",
+      headerName: t("startTime"),
       // flex: 1,
       width: 150,
       sortable: false,
       type: "date",
       valueGetter: (params) => new Date(params.row.start_time),
-      renderCell: ({ row }) => dayjs(row.start_time).format("DD/MM/YYYY, HH:mm"),
+      renderCell: ({ row }) =>
+        dayjs(row.start_time).format("DD/MM/YYYY, HH:mm"),
     },
     {
       field: "complete_time",
-      headerName: "Complete Time",
+      headerName: t("completeTime"),
       sortable: false,
       // flex: 1,
       width: 170,
       type: "date",
       valueGetter: (params) =>
         params.row.complete_time && new Date(params.row.complete_time),
-      renderCell: ({ row }) => row.complete_time && dayjs(row.complete_time).format("DD/MM/YYYY, HH:mm"),
+      renderCell: ({ row }) =>
+        row.complete_time &&
+        dayjs(row.complete_time).format("DD/MM/YYYY, HH:mm"),
     },
     {
       field: "duration",
-      headerName: "Ellapsed",
+      headerName: t("ellapsed"),
       sortable: false,
       // flex: 1,
       width: 140,
       filterable: false,
     },
-    
   ];
-
 
   const renderContent = () => {
     switch (view) {
@@ -131,12 +136,12 @@ export const Lots = () => {
         return <LotsDataPlot lotID={id} />;
       default:
         return (
-            <Table
-              type="lot"
-              columns={columns}
-              url={Endpoints.lots}
-              pageSize={20}
-            />
+          <Table
+            type="lot"
+            columns={columns}
+            url={Endpoints.lots}
+            pageSize={20}
+          />
         );
     }
   };

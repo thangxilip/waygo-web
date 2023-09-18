@@ -21,6 +21,8 @@ import App from "App";
 // Soft UI Context Provider
 import { ArgonControllerProvider } from "context";
 
+import "./configs/i18n";
+
 // react-perfect-scrollbar styles
 import "./global.css";
 const container = document.getElementById("root");

@@ -5,15 +5,17 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { useNavigate } from "react-router-dom";
 import Table from "./Table";
 import dayjs from "dayjs";
-import Checkbox from '@mui/material/Checkbox';
+import Checkbox from "@mui/material/Checkbox";
+import { useTranslation } from "react-i18next";
 
 export const LotsDataTable = ({ lotID }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const columns = [
     {
       field: "id",
-      headerName: "ID",
+      headerName: t("id"),
       sortable: false,
       // flex: 1,
       width: 100,
@@ -21,17 +23,17 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "time",
-      headerName: "Time",
+      headerName: t("time"),
       sortable: false,
       // flex: 1,
       width: 200,
       filterable: false,
-      renderCell: ({ row }) => dayjs(row?.time).format("YYYY-MM-DD HH:mm"),
+      renderCell: ({ row }) => dayjs(row?.time).format("YYYY/MM/DD, HH:mm"),
     },
-    
+
     {
       field: "command_name",
-      headerName: "Command",
+      headerName: t("command"),
       // flex: 1,
       width: 130,
       sortable: false,
@@ -39,14 +41,14 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "amc",
-      headerName: "AMC",
+      headerName: t("amc"),
       width: 110,
       sortable: false,
       filterable: false,
     },
     {
       field: "rh",
-      headerName: "RH",
+      headerName: t("rh"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -54,7 +56,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "dbt1",
-      headerName: "DBT1",
+      headerName: t("dbt1"),
       // flex: 1,
       width: 80,
       sortable: false,
@@ -62,7 +64,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "dbt2",
-      headerName: "DBT2",
+      headerName: t("dbt2"),
       type: "number",
       // flex: 1,
       width: 80,
@@ -71,7 +73,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "wbt1",
-      headerName: "WBT1",
+      headerName: t("wbt1"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -79,7 +81,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "wbt2",
-      headerName: "WBT2",
+      headerName: t("wbt2"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -87,7 +89,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc1",
-      headerName: "MC1",
+      headerName: t("mc1"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -95,7 +97,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc2",
-      headerName: "MC2",
+      headerName: t("mc2"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -103,7 +105,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc3",
-      headerName: "MC3",
+      headerName: t("mc3"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -111,7 +113,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc4",
-      headerName: "MC4",
+      headerName: t("mc4"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -119,7 +121,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc5",
-      headerName: "MC5",
+      headerName: t("mc5"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -127,7 +129,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc6",
-      headerName: "MC6",
+      headerName: t("mc6"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -135,7 +137,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc7",
-      headerName: "MC7",
+      headerName: t("mc7"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -143,7 +145,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "mc8",
-      headerName: "MC8",
+      headerName: t("mc8"),
       sortable: false,
       // flex: 1,
       width: 80,
@@ -151,7 +153,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "wood_temp1",
-      headerName: "Wood temp 1",
+      headerName: t("woodTemp1"),
       sortable: false,
       // flex: 1,
       width: 130,
@@ -159,61 +161,63 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "wood_temp2",
-      headerName: "Wood temp 2",
+      headerName: t("woodTemp2"),
       sortable: false,
       // flex: 1,
       width: 130,
       filterable: false,
     },
-    
+
     {
       field: "flaps",
-      headerName: "Flaps",
+      headerName: t("flaps"),
       sortable: false,
       // flex: 1,
       width: 80,
       filterable: false,
-      renderCell: ({ row }) => <Checkbox readOnly checked={row.flaps === 1}/>,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.flaps === 1} />,
     },
     {
       field: "heat",
-      headerName: "Heat",
+      headerName: t("heat"),
       sortable: false,
       // flex: 1,
       width: 80,
       filterable: false,
-      renderCell: ({ row }) => <Checkbox readOnly checked={row.heat === 1}/>,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.heat === 1} />,
     },
     {
       field: "spray",
-      headerName: "Spray",
+      headerName: t("spray"),
       sortable: false,
       // flex: 1,
       width: 80,
       filterable: false,
-      renderCell: ({ row }) => <Checkbox readOnly checked={row.spray === 1}/>,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.spray === 1} />,
     },
     {
       field: "fan_cw",
-      headerName: "Fan CW",
+      headerName: t("fanCW"),
       sortable: false,
       // flex: 1,
       width: 90,
       filterable: false,
-      renderCell: ({ row }) => <Checkbox readOnly checked={row.fan_cw === 1}/>,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.fan_cw === 1} />,
     },
     {
       field: "fan_ccw",
-      headerName: "Fan CCW",
+      headerName: t("fanCCW"),
       sortable: false,
       // flex: 1,
       width: 90,
       filterable: false,
-      renderCell: ({ row }) => <Checkbox readOnly checked={row.fan_ccw === 1}/>,
+      renderCell: ({ row }) => (
+        <Checkbox readOnly checked={row.fan_ccw === 1} />
+      ),
     },
     {
       field: "details",
-      headerName: "Details",
+      headerName: t("details"),
       sortable: false,
       // flex: 1,
       width: 100,
@@ -221,7 +225,7 @@ export const LotsDataTable = ({ lotID }) => {
     },
     {
       field: "reserved",
-      headerName: "Reserved",
+      headerName: t("reserved"),
       sortable: false,
       // flex: 1,
       width: 100,
@@ -230,7 +234,7 @@ export const LotsDataTable = ({ lotID }) => {
   ];
 
   return (
-    <ArgonBox sx={{  width: "100%" }}>
+    <ArgonBox sx={{ width: "100%" }}>
       <ArgonBox mb={2} display="flex" justifyContent="space-between">
         <ArgonButton
           onClick={() => {
@@ -238,10 +242,16 @@ export const LotsDataTable = ({ lotID }) => {
           }}
         >
           <ArrowBackIosIcon sx={{ fill: "#000" }} />
-          Back
+          {t("back")}
         </ArgonButton>
       </ArgonBox>
-      <Table type="lot_data" lotID={lotID} columns={columns} url={`${Endpoints.lots}${lotID}/lot-data/`} pageSize={50}/>
+      <Table
+        type="lot_data"
+        lotID={lotID}
+        columns={columns}
+        url={`${Endpoints.lots}${lotID}/lot-data/`}
+        pageSize={50}
+      />
     </ArgonBox>
   );
 };
