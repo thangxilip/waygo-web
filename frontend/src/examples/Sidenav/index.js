@@ -122,14 +122,13 @@ function Sidenav({ color, brand, brandName, ...rest }) {
             <Icon sx={{ fontWeight: "bold" }}>close</Icon>
           </ArgonTypography>
         </ArgonBox>
-        <ArgonBox component={NavLink} to="/" display="flex" alignItems="center">
+        <ArgonBox component={NavLink} to="/" display="flex" alignItems="center" justifyContent="center">
           {brand && (
             <ArgonBox
               component="img"
               src={brand}
               alt="Argon Logo"
-              width="10rem"
-              mr={0.25}
+              width={miniSidenav ? '52px' : '100%'}
             />
           )}
           <ArgonBox

@@ -5,6 +5,9 @@ import Sidenav from "examples/Sidenav";
 import { useArgonController, setMiniSidenav } from "context";
 import { useState } from "react";
 import waygoImg from "assets/images/waygo.png";
+import waygoDarkImg from "assets/images/waygo_dark.png";
+import waygoMiniImg from "assets/images/waygo_mini.png";
+import waygoDarkMiniImg from "assets/images/waygo_dark_mini.png";
 import ArgonBox from "components/ArgonBox";
 import { useMediaQuery } from "@mui/material";
 
@@ -13,7 +16,7 @@ function Default() {
   const isMobile = useMediaQuery("(max-width:475px)");
 
   const [controller, dispatch] = useArgonController();
-  const { miniSidenav, sidenavColor } = controller;
+  const { miniSidenav, sidenavColor, darkMode } = controller;
 
   // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
@@ -30,12 +33,20 @@ function Default() {
     }
   };
 
+  const brand = miniSidenav
+    ? darkMode
+      ? waygoDarkMiniImg
+      : waygoMiniImg
+    : darkMode
+    ? waygoDarkImg
+    : waygoImg;
+
   return (
     <>
       <DashboardLayout>
         <Sidenav
           color={sidenavColor}
-          brand={waygoImg}
+          brand={brand}
           onMouseEnter={handleOnMouseEnter}
           onMouseLeave={handleOnMouseLeave}
         />

@@ -15,7 +15,9 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import waygoImg from "assets/images/waygo.png";
+import waygoDarkImg from "assets/images/waygo_dark.png";
 import { useTranslation } from "react-i18next";
+import { useArgonController } from "context";
 
 const initialValues = {
   userName: "",
@@ -23,6 +25,8 @@ const initialValues = {
 };
 
 function SignIn() {
+  const [controller] = useArgonController();
+  const { darkMode } = controller;
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [notValidUser, setNotValidUser] = useState("");
@@ -52,12 +56,12 @@ function SignIn() {
     });
   return (
     <CoverLayout
-      image={waygoImg}
+      image={darkMode ? waygoDarkImg : waygoImg}
       imgPosition="top"
       button={{ color: "dark", variant: "gradient" }}
     >
       <Card>
-        <ArgonBox sx={{ backgroundImage: `url(${waygoImg})` }}></ArgonBox>
+        {/* <ArgonBox sx={{ backgroundImage: `url(${waygoImg})` }}></ArgonBox> */}
         <ArgonBox p={3} mb={1} textAlign="center">
           <ArgonTypography variant="h5" fontWeight="light">
             {t("pleaseLogIn")}
