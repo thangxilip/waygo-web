@@ -20,10 +20,13 @@ def calculate_duration(given_time):
 
     return ' '.join(filter(None, parts))
 
-def convert_string_to_date(date_str, date_format="%Y-%m-%dT%H:%M:%S"):
+def convert_string_to_date(date_str):
     try:
-        date = datetime.strptime(date_str, date_format)
-        return date
+        for fmt in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
+            try:
+                return datetime.strptime(date_str, fmt)
+            except ValueError:
+                pass
     except:
         return None
     

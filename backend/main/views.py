@@ -1,14 +1,15 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.http import JsonResponse, Http404, HttpResponse
-from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.db import transaction
 from django.db.models import Q, Sum, ExpressionWrapper, F, Max, Min, Max, Subquery, OuterRef, Count, Prefetch
 from django.db.models.fields import DurationField, FloatField
+from main.utils import convert_string_to_date
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets, permissions, status
@@ -271,7 +272,7 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         detail=False, methods=['get'], url_name='ongoing_lot', url_path='ongoing-lot'
     )
     def ongoing_lot(self, request):
-        three_months_ago = timezone.now() - timedelta(days=settings.DEFAULT_DAYS)
+        three_months_ago = datetime.now() - timedelta(days=settings.DEFAULT_DAYS)
         ongoing_lot = self.filter_queryset(Lot.objects.filter(
             complete_time__isnull=True, start_time__gte=three_months_ago
         ))
@@ -286,7 +287,7 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         detail=False, methods=['get'], url_name='historical_lot', url_path='historical-lot'
     )
     def historical_lot(self, request):
-        three_months_ago = timezone.now() - timedelta(days=settings.DEFAULT_DAYS)
+        three_months_ago = datetime.now() - timedelta(days=settings.DEFAULT_DAYS)
         historical_lot = self.filter_queryset(Lot.objects.filter(
             Q(complete_time__isnull=False) | Q(start_time__lt=three_months_ago)
         ))
@@ -303,7 +304,7 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
     def mark_lot_completed(self, request, pk=None):
         try:
             completed_lot = Lot.objects.get(id=pk)
-            completed_lot.complete_time = timezone.now().replace(microsecond=0)
+            completed_lot.complete_time = datetime.now().replace(microsecond=0)
             completed_lot.save()
             return Response(self.get_serializer(instance=completed_lot).data, status=status.HTTP_200_OK)
         except Lot.DoesNotExist:
@@ -469,72 +470,64 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated, ])
 def statistic(request):
-    start = request.query_params.get('start')
-    end = request.query_params.get('end')
+    start = convert_string_to_date(request.query_params.get('start'))
+    end = convert_string_to_date(request.query_params.get('end'))
     if not start and not end:
         return Response(
             {'message': 'start time and end time is required'},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    
+    start = datetime.combine(start, datetime.min.time())
+    end = datetime.combine(end + timedelta(days=1), datetime.min.time())
+    time_period = end - start
+    
     data = {
         'total_wood_dried': [],
         'total_chamber_quantity_dried': [],
     }
-    lots = Lot.objects.filter(
-        company=request.user.appuser.company, complete_time__range=[start, end], complete_time__isnull=False
+
+    completed_lot_queryset = Lot.objects.filter(
+        company=request.user.appuser.company, complete_time__date__range=[start, end], complete_time__isnull=False
     )
 
-    wood_dried = lots.values('species').annotate(total_quantity=Sum('quantity'))
+    wood_dried = completed_lot_queryset.values('species').annotate(total_quantity=Sum('quantity'))
     for wood in wood_dried:
         data['total_wood_dried'].append({
             'x': wood.get('species'),
             'y': wood.get('total_quantity')
         })
 
-    chambers_quantities = lots.values('chamber').annotate(total_quantity=Sum('quantity'))
+    chambers_quantities = completed_lot_queryset.values('chamber').annotate(total_quantity=Sum('quantity'))
     for chamber_quantity in chambers_quantities:
         data['total_chamber_quantity_dried'].append({
             'x': chamber_quantity.get('chamber'),
             'y': chamber_quantity.get('total_quantity')
         })
-    chambers_status = StatusReport.objects.filter(
-        time__range=[start, end], company=request.user.appuser.company
-    ).order_by('chamber', 'server_time')
-    operating_time_dict = {}
-    idle_time_dict = {}
-    prev_server_time = {}
+    
+    lot_queryset = Lot.objects.filter(
+        Q(company=request.user.appuser.company) & Q(start_time__lte=end) &
+        (Q(complete_time__isnull=True) | Q(complete_time__gte=start))
+    )
 
-    for report in chambers_status:
-        chamber_id = report.chamber
+    operating_time_dict = defaultdict(timedelta)
+    idle_time_dict = defaultdict(timedelta)
 
-        if chamber_id not in operating_time_dict:
-            operating_time_dict[chamber_id] = timedelta()
+    lots = lot_queryset.values()
+    for lot in lots:
+        chamber_id = int(lot.get('chamber'))
+        start_time = lot.get('start_time') if lot.get('start_time') > start else start
+        complete_time = lot.get('complete_time') if lot.get('complete_time') is not None and lot.get('complete_time') < end else end
+        if start_time < complete_time:
+            operation_time = complete_time - start_time
+            operating_time_dict[chamber_id] += operation_time
+            idle_time_dict[chamber_id] = time_period - operating_time_dict[chamber_id]
 
-        if chamber_id not in idle_time_dict:
-            idle_time_dict[chamber_id] = timedelta()
-
-        if chamber_id in prev_server_time:
-            time_diff = report.server_time - prev_server_time[chamber_id]
-        else:
-            time_diff = timedelta()
-
-        if report.status_code > 0:
-            idle_time_dict[chamber_id] += time_diff
-        else:
-            operating_time_dict[chamber_id] += time_diff
-
-        prev_server_time[chamber_id] = report.server_time
-
-    use_rate_dict = {}
-    for chamber_id in chambers_status.values_list('chamber', flat=True):
-        total_time = operating_time_dict[int(chamber_id)] + idle_time_dict[int(chamber_id)]
-        use_rate = 100.0 * ((total_time - idle_time_dict[int(chamber_id)]) / total_time) if total_time.total_seconds() != 0 else 0.0
-        use_rate_dict[chamber_id] = use_rate
     data.update({
         'operation_time': operating_time_dict,
         'idle_time': idle_time_dict,
-        'total_use_rate': use_rate_dict})
-
+    })
+    
     return Response(data, status=status.HTTP_200_OK)
 
 
