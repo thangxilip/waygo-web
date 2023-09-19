@@ -260,7 +260,14 @@ const Table = ({
     return <Box sx={{ display: "flex" }}>{iconButton}</Box>;
   }, []);
 
-  const ChamberSummary = () => (
+  const ChamberSummary = () => {
+    const cardStyles = (theme) => ({
+      pt: 2,
+      [theme.breakpoints.down("sm")]: {
+        width: "100%",
+      },
+    });
+    return (
     <Box
       sx={{
         display: "flex",
@@ -272,28 +279,28 @@ const Table = ({
         },
       }}
     >
-      <Card elevation={3} sx={{ pt: 2 }}>
+      <Card elevation={3} sx={cardStyles}>
         <CardContent>
           <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
             {t("totalIdleChambers")}
           </Typography>
           <Typography align="center" variant="h5" color="info.main">
-            {chamberSummary?.total_idle_chambers}
+            {chamberSummary?.total_idle_chambers || 0}
           </Typography>
         </CardContent>
       </Card>
-      <Card elevation={3} sx={{ pt: 2 }}>
+      <Card elevation={3} sx={cardStyles}>
         <CardContent>
           <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
             {t("totalOperatingChambers")}
           </Typography>
           <Typography align="center" variant="h5" color="success.main">
-            {chamberSummary?.total_operating_chambers}
+            {chamberSummary?.total_operating_chambers || 0}
           </Typography>
         </CardContent>
       </Card>
     </Box>
-  );
+  )};
 
   function CustomToolbar() {
     return (

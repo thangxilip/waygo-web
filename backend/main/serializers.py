@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from main.utils import convert_date_to_string, convert_string_to_date, time_since, calculate_duration
+from main.utils import convert_date_to_string, convert_string_to_date, time_since, duration_since
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from main.models import Lot, LotData, StatusReport, AppUser, Company
@@ -34,6 +34,12 @@ class LotSerializer(ModelSerializer):
         model = Lot
         fields = '__all__'
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.duration:
+            data['duration'] = instance.duration
+        return data
+
 
 class LotExcelSerializer(ModelSerializer):
 
@@ -46,6 +52,8 @@ class LotExcelSerializer(ModelSerializer):
         data['start_time'] = instance.start_time.strftime('%d/%m/%Y, %H:%M:%S')
         if instance.complete_time:
             data['complete_time'] = instance.complete_time.strftime('%d/%m/%Y, %H:%M:%S')
+        if instance.duration:
+            data['duration'] = str(instance.duration).split(".")[0]
         return data
 
 
@@ -117,7 +125,7 @@ class StatusReportListSerializer(ModelSerializer):
             data["since_last_complete"] = time_since(complete_time)
 
         if instance.lot:
-            data["total_time"] = calculate_duration(instance.lot.start_time)
+            data["total_time"] = duration_since(instance.lot.start_time)
         
         data["last_report"] = convert_date_to_string(instance.server_time)
         data["since_last_report"] = time_since(instance.server_time)

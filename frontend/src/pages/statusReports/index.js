@@ -1,21 +1,40 @@
 import React from "react";
 import ArgonBox from "components/ArgonBox";
 import { Endpoints } from "utils/httpServices";
-import { useLocation, useNavigate } from "react-router-dom";
 import Table from "./components/Table";
 import dayjs from "dayjs";
 import Chip from "@mui/material/Chip";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { secondsToDuration } from "utils/helper";
 import { useTranslation } from "react-i18next";
-import localeVi from 'dayjs/locale/vi';
+import localeVi from "dayjs/locale/vi";
+import localeEn from "dayjs/locale/en";
+import updateLocale from "dayjs/plugin/updateLocale";
 
+var thresholds = [
+  { l: "s", r: 1 },
+  { l: "ss", r: 59, d: "second" },
+  { l: "m", r: 1 },
+  { l: "mm", r: 59, d: "minute" },
+  { l: "h", r: 1 },
+  { l: "hh", r: 23, d: "hour" },
+  { l: "d", r: 1 },
+  { l: "dd", r: 29, d: "day" },
+  { l: "M", r: 1 },
+  { l: "MM", r: 11, d: "month" },
+  { l: "y", r: 1 },
+  { l: "yy", d: "year" },
+];
+var config = {
+  strict: true,
+  thresholds: thresholds,
+  rounding: Math.floor
+};
 
-dayjs.extend(relativeTime);
+dayjs.extend(relativeTime, config);
+dayjs.extend(updateLocale);
 
 const StatusReports = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { t, i18n } = useTranslation();
 
   const columns = [
@@ -49,35 +68,33 @@ const StatusReports = () => {
       width: 160,
       sortable: false,
       filterable: false,
-      // type: "date",
-      // valueGetter: ({ row }) => row.last_completed_lot?.complete_time && new Date(row.last_completed_lot?.complete_time),
-      // renderCell: ({ row }) => row.last_completed_lot?.complete_time && dayjs(row.last_completed_lot?.complete_time).format("DD/MM/YYYY, HH:mm"),
+      renderCell: ({ row }) =>
+        row.last_completed_lot?.complete_time &&
+        dayjs(row.last_completed_lot?.complete_time).format(
+          "DD/MM/YYYY, HH:mm"
+        ),
     },
     {
       field: "since_last_complete",
       headerName: t("sinceLastComplete"),
       sortable: false,
-      // flex: 1,
       width: 200,
       filterable: false,
-      // renderCell: ({ row }) => {
-      //   if (row.last_completed_lot?.complete_time) {
-      //     let day = dayjs(row.last_completed_lot?.complete_time);
-      //     day = day.locale(localeVi)
-          
-      //     return day.fromNow(true)
-      //   }
-      // },
+      renderCell: ({ row }) => {
+        if (row.last_completed_lot?.complete_time) {
+          let day = dayjs(row.last_completed_lot?.complete_time);
+          return day.locale(i18n.language).fromNow();
+        }
+      },
     },
     {
       field: "last_report",
       headerName: t("lastReport"),
       sortable: false,
       width: 200,
-      // type: "date",
       filterable: false,
-      // valueGetter: (params) => new Date(params.row.server_time),
-      // renderCell: ({ row }) => dayjs(row.server_time).format("DD/MM/YYYY, HH:mm"),
+      renderCell: ({ row }) =>
+        dayjs(row.server_time).format("DD/MM/YYYY, HH:mm"),
     },
     {
       field: "since_last_report",
@@ -85,7 +102,10 @@ const StatusReports = () => {
       sortable: false,
       width: 200,
       filterable: false,
-      // renderCell: ({ row }) => dayjs(row.server_time).fromNow(true),
+      renderCell: ({ row }) => {
+        let day = dayjs(row.server_time);
+        return day.locale(i18n.language).fromNow();
+      },
     },
     {
       field: "lot_id",

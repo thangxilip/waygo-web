@@ -26,8 +26,10 @@ const Statistics = () => {
       palette: "#fff",
     },
     chart: {
+      fontFamily: 'inherit',
       width: "100%",
       height: 400,
+      background: 'transparent',
       toolbar: {
         tools: {
           download: `<img src=${print} alt="print" width="16px"/>`,
@@ -174,7 +176,7 @@ const Statistics = () => {
                 yaxis: {
                   labels: {
                     formatter: (value) => {
-                      return secondsToDuration(value, "");
+                      return secondsToDuration(value, "", "");
                     },
                   },
                 },

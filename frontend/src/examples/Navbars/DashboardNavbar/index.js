@@ -52,6 +52,7 @@ import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { useTranslation } from "react-i18next";
 import enLang from "assets/images/en-lang.svg";
 import viLang from "assets/images/vi-lang.svg";
+import { saveDarkModeToStorage } from "utils/helper";
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState("static");
@@ -102,6 +103,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const handleDarkMode = () => {
     setDarkSidenav(dispatch, !darkMode);
     setDarkMode(dispatch, !darkMode);
+    saveDarkModeToStorage(!darkMode);
   };
   const handleGlobal = (event) => {
     setAnchorEl(event.currentTarget);
@@ -112,11 +114,11 @@ function DashboardNavbar({ absolute, light, isMini }) {
   };
 
   const handleClose = () => {
-    setAnchorEl(!anchorEl);
+    setAnchorEl(null);
   };
 
   const handleCloseProfile = () => {
-    setProfileAnchorEl(!profileAnchorEl);
+    setProfileAnchorEl(null);
   };
 
   const handleLogout = () => {
@@ -203,6 +205,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   anchorEl={anchorEl}
                   open={open}
                   onClose={handleClose}
+                  onClick={handleClose}
                   MenuListProps={{
                     "aria-labelledby": "basic-button",
                   }}
@@ -275,7 +278,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   aria-expanded={openProfile ? "true" : undefined}
                   onClick={handleProfile}
                 >
-                  <Avatar sx={{ width: 32, height: 32 }} />
+                  <Avatar sx={{ width: 28, height: 28 }} />
                 </IconButton>
                 <Menu
                   anchorEl={profileAnchorEl}

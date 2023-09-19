@@ -78,12 +78,13 @@ const Table = ({
       page: paginationModel.page + 1,
     };
     filters?.forEach((filter) => {
-      
       let key = "";
       if (filter.operator !== "=") key = filter.operator;
 
-      if (filter.field === "start_time" || filter.field === 'complete_time') {
-        params[filter.field + key] = dayjs(filter.value).format("YYYY-MM-DD HH:mm:ss")
+      if (filter.field === "start_time" || filter.field === "complete_time") {
+        params[filter.field + key] = dayjs(filter.value).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
       } else {
         params[filter.field + key] = filter.value;
       }
@@ -249,60 +250,70 @@ const Table = ({
     return <Box sx={{ display: "flex" }}>{iconButton}</Box>;
   }, []);
 
-  const LotSummary = () => (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        gap: 1,
-        flexWrap: "wrap",
-        "& > :not(style)": {
-          mb: 2,
-        },
-      }}
-    >
-      <Card elevation={3} sx={{ pt: 2 }}>
-        <CardContent>
-          <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-            {t("totalQuantity")}
-          </Typography>
-          <Typography align="center" variant="h5">
-            {lotSummary?.total_quantity?.toFixed(2) || 0}
-          </Typography>
-        </CardContent>
-      </Card>
-      <Card elevation={3} sx={{ pt: 2 }}>
-        <CardContent>
-          <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-            {t("totalTimeInPeriod")}
-          </Typography>
-          <Typography align="center" variant="h5">
-            <Duration durationInSeconds={lotSummary?.total_time_in_period} />
-          </Typography>
-        </CardContent>
-      </Card>
-      <Card elevation={3} sx={{ pt: 2 }}>
-        <CardContent>
-          <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-            {t("totalOperationTime")}
-          </Typography>
-          <Typography align="center" variant="h5">
-            <Duration durationInSeconds={lotSummary?.total_operation_time} />
-          </Typography>
-        </CardContent>
-      </Card>
-      <Card elevation={3} sx={{ pt: 2 }}>
-        <CardContent>
-          <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
-            {t("occupancyRatio")}
-          </Typography>
-          <Typography align="center" variant="h5">
-            {lotSummary?.occupancy_ratio?.toFixed(2) || 0}%
-          </Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  );
+  const LotSummary = () => {
+    const cardStyles = (theme) => ({
+      pt: 2,
+      [theme.breakpoints.down("sm")]: {
+        width: "100%",
+      },
+    });
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          rowGap: 0,
+          columnGap: 1,
+          flexWrap: "wrap",
+          "& > :not(style)": {
+            mb: 2,
+          },
+        }}
+      >
+        <Card elevation={3} sx={cardStyles}>
+          <CardContent>
+            <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
+              {t("totalQuantity")}
+            </Typography>
+            <Typography align="center" variant="h5">
+              {lotSummary?.total_quantity?.toFixed(2) || 0}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card elevation={3} sx={cardStyles}>
+          <CardContent>
+            <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
+              {t("totalTimeInPeriod")}
+            </Typography>
+            <Typography align="center" variant="h5">
+              <Duration durationInSeconds={lotSummary?.total_time_in_period} />
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card elevation={3} sx={cardStyles}>
+          <CardContent>
+            <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
+              {t("totalOperationTime")}
+            </Typography>
+            <Typography align="center" variant="h5">
+              <Duration durationInSeconds={lotSummary?.total_operation_time} />
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card elevation={3} sx={cardStyles}>
+          <CardContent>
+            <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
+              {t("occupancyRatio")}
+            </Typography>
+            <Typography align="center" variant="h5">
+              {lotSummary?.occupancy_ratio?.toFixed(2) || 0}%
+            </Typography>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  };
 
   function CustomToolbar() {
     return (

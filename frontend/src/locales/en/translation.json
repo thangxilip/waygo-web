@@ -82,5 +82,6 @@
     "greaterThanEquals": "greater than or equals",
     "lessThanEquals": "less than or equals",
     "lessThan": "less than",
-    "days": "days"
+    "days": "days",
+    "day": "day"
 }

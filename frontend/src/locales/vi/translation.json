@@ -82,5 +82,6 @@
     "greaterThanEquals": "lớn hơn hoặc bằng",
     "lessThanEquals": "nhỏ hơn hoặc bằng",
     "lessThan": "nhỏ hơn",
-    "days": "ngày"
+    "days": "ngày",
+    "day": "ngày"
 }

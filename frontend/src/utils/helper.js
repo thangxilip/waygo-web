@@ -12,12 +12,20 @@ export const getUser = () => {
   };
 };
 
+export const saveDarkModeToStorage = (value) => {
+  localStorage.setItem("dark_mode", value);
+}
+
+export const getDarkModeFromStorage = () => {
+  return localStorage.getItem('dark_mode') === 'true';
+}
+
 export const getChamberStatus = (code) => {
   if (code === 0) return "Operating";
   else return "Idle";
 };
 
-export const secondsToDuration = (seconds, d=i18n.t("days")) => {
+export const secondsToDuration = (seconds, dd=i18n.t("days"), d=i18n.t("day")) => {
   const days = Math.floor(seconds / (60 * 60 * 24));
   seconds %= 60 * 60 * 24;
   const hours = Math.floor(seconds / (60 * 60));
@@ -26,7 +34,7 @@ export const secondsToDuration = (seconds, d=i18n.t("days")) => {
   seconds %= 60;
   seconds = Math.floor(seconds);
 
-  const formattedDays = days > 0 ? `${days} ${d}` : '';
+  const formattedDays = days > 1 ? `${days} ${dd}` : days === 1 ? `${days} ${d}` : '';
   const formattedHours = `${hours}`.padStart(2, '0');
   const formattedMinutes = `${minutes}`.padStart(2, '0');
   const formattedSeconds = `${seconds}`.padStart(2, '0');

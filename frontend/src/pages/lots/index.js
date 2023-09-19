@@ -9,6 +9,7 @@ import { Button } from "@mui/material";
 import TableViewIcon from "@mui/icons-material/TableView";
 import BubbleChartIcon from "@mui/icons-material/BubbleChart";
 import dayjs from "dayjs";
+import { secondsToDuration } from "utils/helper";
 import { useTranslation } from "react-i18next";
 
 export const Lots = () => {
@@ -56,7 +57,6 @@ export const Lots = () => {
     {
       field: "id",
       headerName: t("lotId"),
-      // flex: 1,
       width: 155,
       sortable: false,
       filterable: false,
@@ -65,7 +65,6 @@ export const Lots = () => {
     {
       field: "program_name",
       headerName: t("program"),
-      // flex: 1,
       width: 210,
       sortable: false,
       filterable: false,
@@ -74,7 +73,6 @@ export const Lots = () => {
       field: "total_commands",
       headerName: t("commands"),
       sortable: false,
-      // flex: 1,
       width: 110,
       filterable: false,
     },
@@ -82,7 +80,6 @@ export const Lots = () => {
       field: "species",
       headerName: t("species"),
       sortable: false,
-      // flex: 1,
       width: 135,
       type: "string",
     },
@@ -90,14 +87,12 @@ export const Lots = () => {
       field: "quantity",
       headerName: t("quantity"),
       sortable: false,
-      // flex: 1,
       width: 110,
       filterable: false,
     },
     {
       field: "start_time",
       headerName: t("startTime"),
-      // flex: 1,
       width: 150,
       sortable: false,
       type: "date",
@@ -109,7 +104,6 @@ export const Lots = () => {
       field: "complete_time",
       headerName: t("completeTime"),
       sortable: false,
-      // flex: 1,
       width: 170,
       type: "date",
       valueGetter: (params) =>
@@ -122,9 +116,10 @@ export const Lots = () => {
       field: "duration",
       headerName: t("ellapsed"),
       sortable: false,
-      // flex: 1,
       width: 140,
       filterable: false,
+      renderCell: ({ row }) =>
+        row.duration && secondsToDuration(row.duration)
     },
   ];
 
