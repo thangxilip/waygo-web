@@ -1,5 +1,5 @@
 # Base image
-FROM node:18 as build
+FROM node:18-alpine as build
 
 # Set working directory
 WORKDIR /app
@@ -18,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # Production image
-FROM nginx:latest
+FROM nginx:1.25.2-alpine
 
 # Copy the built files to Nginx's web root directory
 COPY --from=build /app/build /usr/share/nginx/html
@@ -31,4 +31,3 @@ EXPOSE 80
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
-    
