@@ -9,7 +9,6 @@ import { secondsToDuration } from "utils/helper";
 import { useTranslation } from "react-i18next";
 import localeVi from "dayjs/locale/vi";
 import localeEn from "dayjs/locale/en";
-import updateLocale from "dayjs/plugin/updateLocale";
 
 var thresholds = [
   { l: "s", r: 1 },
@@ -32,7 +31,6 @@ var config = {
 };
 
 dayjs.extend(relativeTime, config);
-dayjs.extend(updateLocale);
 
 const StatusReports = () => {
   const { t, i18n } = useTranslation();

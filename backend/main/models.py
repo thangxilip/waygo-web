@@ -23,7 +23,7 @@ class StatusReport(models.Model):
         auto_now_add=True
     )  # auto created when record is added
     status_code = models.IntegerField()  # 0 = operating; >0 = idle
-    lot = models.ForeignKey("Lot", on_delete=models.CASCADE, null=True) # only has value when status_code = 1
+    lot = models.ForeignKey("Lot", on_delete=models.SET_NULL, null=True) # only has value when status_code = 1
     details = models.CharField(max_length=100, null=True)
 
 

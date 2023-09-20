@@ -36,8 +36,8 @@ class LotSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if instance.duration:
-            data['duration'] = instance.duration
+        if instance.duration is not None:
+            data['duration'] = instance.duration.total_seconds()
         return data
 
 

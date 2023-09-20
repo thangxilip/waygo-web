@@ -119,7 +119,7 @@ export const Lots = () => {
       width: 140,
       filterable: false,
       renderCell: ({ row }) =>
-        row.duration && secondsToDuration(row.duration)
+        row.duration !== null && secondsToDuration(row.duration)
     },
   ];
 
