@@ -66,6 +66,13 @@ export const LotsDataTable = ({ lotID }) => {
       filterable: false,
     },
     {
+      field: "targetdbt",
+      headerName: t("targetdbt"),
+      width: 120,
+      sortable: false,
+      filterable: false,
+    },
+    {
       field: "wbt1",
       headerName: t("wbt1"),
       sortable: false,
@@ -77,6 +84,13 @@ export const LotsDataTable = ({ lotID }) => {
       headerName: t("wbt2"),
       sortable: false,
       width: 80,
+      filterable: false,
+    },
+    {
+      field: "targetwbt",
+      headerName: t("targetwbt"),
+      width: 120,
+      sortable: false,
       filterable: false,
     },
     {
@@ -197,7 +211,7 @@ export const LotsDataTable = ({ lotID }) => {
       headerName: t("details"),
       sortable: false,
       // flex: 1,
-      width: 100,
+      width: 150,
       filterable: false,
     },
     {
@@ -205,7 +219,7 @@ export const LotsDataTable = ({ lotID }) => {
       headerName: t("reserved"),
       sortable: false,
       // flex: 1,
-      width: 100,
+      width: 150,
       filterable: false,
     },
   ];
