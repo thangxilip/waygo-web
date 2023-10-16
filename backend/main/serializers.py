@@ -1,17 +1,8 @@
-from django.contrib.auth.models import User
 from main.utils import convert_date_to_string, convert_string_to_date, time_since, duration_since
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from main.models import Lot, LotData, StatusReport, AppUser, Company
+from main.models import Lot, LotData, StatusReport, Company, User
 import datetime
-
-
-class UserSerializer(ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email')
-
 
 class CompanySerializer(ModelSerializer):
 
@@ -20,13 +11,12 @@ class CompanySerializer(ModelSerializer):
         fields = '__all__'
 
 
-class AppUserSerializer(ModelSerializer):
-    user = UserSerializer(read_only=True)
+class UserSerializer(ModelSerializer):
     company = CompanySerializer(read_only=True)
 
     class Meta:
-        model = AppUser
-        fields = ('user', 'company', 'fullname')
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'company')
 
 
 class LotSerializer(ModelSerializer):

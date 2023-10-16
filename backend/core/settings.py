@@ -46,6 +46,8 @@ DJANGO_APPS = [
     'drf_yasg',
     'django_filters',
     "corsheaders",
+    "rest_framework",
+    "rest_framework_api_key",
 ]
 
 PROJECT_APPS = [
@@ -104,18 +106,18 @@ DATABASES = {
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    # },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    # },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    # },
 ]
 
 
@@ -143,6 +145,8 @@ CORS_EXPOSE_HEADERS = [
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
+AUTH_USER_MODEL = "main.User"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -152,6 +156,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'main.authentication.APIKeyAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
@@ -170,7 +175,6 @@ REST_AUTH_SERIALIZERS = {
 DEFAULT_DAYS = env.int('WG_DEFAULT_DAYS', default=90)
 
 CORS_ORIGIN_ALLOW_ALL = True
-
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {

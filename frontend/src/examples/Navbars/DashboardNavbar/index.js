@@ -61,7 +61,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const open = Boolean(anchorEl);
   const openProfile = Boolean(profileAnchorEl);
   const [controller, dispatch] = useArgonController();
-  const { user, company } = getUser();
+  const user = getUser();
   const isMobile = useMediaQuery("(max-width:475px)");
 
   const { miniSidenav, transparentNavbar, fixedNavbar, darkMode } = controller;
@@ -247,7 +247,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   >
                     <img src={viLang} alt="print" width="18px" />
                     <Typography sx={{ ml: 1, fontSize: 14 }} variant="body2">
-                      Việt Nam
+                      Tiếng Việt
                     </Typography>
                   </MenuItem>
                 </Menu>
@@ -328,7 +328,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                     <Box sx={{ ml: 1 }}>
                       <Typography variant="body2">{user?.username}</Typography>
                       <Typography variant="body2" sx={{ fontSize: 12 }}>
-                        {company?.name}
+                        {user?.company?.name}
                       </Typography>
                     </Box>
                   </Box>

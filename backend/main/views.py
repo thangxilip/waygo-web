@@ -12,9 +12,10 @@ from django.db.models.fields import DurationField, FloatField
 from main.utils import convert_string_to_date
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, viewsets, permissions, status
+from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.response import Response
+from main.permissions import HasAPIKeyOrIsAuthenticated
 
 from main.filters import LotFilterSet, StatusReportFilterSet
 from main.models import Lot, LotData, StatusReport
@@ -204,7 +205,7 @@ once the drying lot is completed at the kiln.
 
 
 class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = LotFilterSet
     pagination_class = CustomPageNumberPagination
@@ -212,7 +213,7 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
     def get_queryset(self):
         if self.request.user.is_superuser:
             return Lot.objects.all().order_by("-start_time")
-        qs = Lot.objects.filter(company=self.request.user.appuser.company).order_by("-start_time")
+        qs = Lot.objects.filter(company=self.request.user.company).order_by("-start_time")
         return qs
 
     def get_serializer_class(self):
@@ -258,7 +259,7 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         if self.request.user.is_superuser:
             lot_data = LotData.objects.filter(lot_id=pk).order_by("-time")
         else:
-            lot_data = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.appuser.company).order_by("-time")
+            lot_data = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.company).order_by("-time")
     
         if self.request.query_params.get('get_all', 'False').lower() == 'true':
             return Response(LotDataSerializer(instance=lot_data, many=True).data, status=status.HTTP_200_OK)
@@ -335,7 +336,7 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         if self.request.user.is_superuser:
             queryset = LotData.objects.filter(lot_id=pk).order_by("-time")
         else:
-            queryset = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.appuser.company).order_by("-time")
+            queryset = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.company).order_by("-time")
         
         data = LotDataExcelSerializer(instance=queryset, many=True).data
 
@@ -348,12 +349,12 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
 
 
 class LotDataViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
     serializer_class = LotDataSerializer
 
 
 class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = StatusReportFilterSet
     pagination_class = CustomPageNumberPagination
@@ -362,7 +363,7 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
         if self.request.user.is_superuser:
             queryset = StatusReport.objects.all()
         else:
-            queryset = StatusReport.objects.filter(company=self.request.user.appuser.company)
+            queryset = StatusReport.objects.filter(company=self.request.user.company)
 
         # Subquery to find the latest report for each chamber
         latest_report_subquery = (
@@ -392,7 +393,7 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
     def create(self, request, *args, **kwargs):
         # Remove old reports of chamber
         StatusReport.objects.filter(
-            company=request.user.appuser.company,
+            company=request.user.company,
             chamber=request.data.get("chamber")
         ).delete()
 
@@ -468,7 +469,7 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
 
 @swagger_auto_schema(methods=['get'], manual_parameters=[])
 @api_view(["GET"])
-@permission_classes([permissions.IsAuthenticated, ])
+@permission_classes([HasAPIKeyOrIsAuthenticated, ])
 def statistic(request):
     start = convert_string_to_date(request.query_params.get('start'))
     end = convert_string_to_date(request.query_params.get('end'))
@@ -488,7 +489,7 @@ def statistic(request):
     }
 
     completed_lot_queryset = Lot.objects.filter(
-        company=request.user.appuser.company, complete_time__date__range=[start, end], complete_time__isnull=False
+        company=request.user.company, complete_time__date__range=[start, end], complete_time__isnull=False
     )
 
     wood_dried = completed_lot_queryset.values('species').annotate(total_quantity=Sum('quantity'))
@@ -506,7 +507,7 @@ def statistic(request):
         })
     
     lot_queryset = Lot.objects.filter(
-        Q(company=request.user.appuser.company) & Q(start_time__lte=end) &
+        Q(company=request.user.company) & Q(start_time__lte=end) &
         (Q(complete_time__isnull=True) | Q(complete_time__gte=start))
     )
 

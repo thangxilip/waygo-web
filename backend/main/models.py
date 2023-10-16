@@ -1,6 +1,8 @@
+import math
 from django.db import models
-from django.contrib.auth.models import User
-
+from django.contrib.auth.models import PermissionsMixin
+from rest_framework_api_key.models import AbstractAPIKey
+from django.contrib.auth.models import AbstractUser
 
 class Company(models.Model):
     name = models.CharField(max_length=100)
@@ -15,6 +17,17 @@ class Company(models.Model):
         return f"{self.id}. {self.name}"
 
 
+class CompanyAPIKey(AbstractAPIKey):
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="api_keys",
+    )
+
+    class Meta(AbstractAPIKey.Meta):
+        verbose_name = "Company API key"
+        verbose_name_plural = "Company API keys"
+
 class StatusReport(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     chamber = models.PositiveSmallIntegerField()
@@ -28,26 +41,27 @@ class StatusReport(models.Model):
 
 
 """
-To developer: the following AppUser may be deleted, you may need to implement
-a user model that is associated with a company and will be used for authentication
 Note that in production I want to be able to create new users and companies 
 in Django admin
 """
 
+class User(AbstractUser, PermissionsMixin):
+    company = models.ForeignKey(Company, blank=True, null=True, on_delete=models.CASCADE)
 
-class AppUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    fullname = models.CharField(max_length=100)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.company.name}"
+    def get_full_name(self):
+        '''
+        Returns the first_name plus the last_name, with a space in between.
+        '''
+        full_name = '%s %s' % (self.first_name, self.last_name)
+        return full_name.strip()
+    
+    class Meta:
+        db_table = 'auth_user'
 
 
 """
 This is the model describing a timber drying lot. In production these new records will be created POST
 """
-
 
 class Lot(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
@@ -86,7 +100,6 @@ class Lot(models.Model):
 In production these LotData records will be created once an hour via POST
 """
 
-
 class LotData(models.Model):
     lot = models.ForeignKey(Lot, on_delete=models.CASCADE, related_name="lot_data")
     time = models.DateTimeField()
@@ -96,7 +109,8 @@ class LotData(models.Model):
     dbt1 = models.FloatField()
     dbt2 = models.FloatField(null=True)
     rh = models.FloatField(null=True)
-
+    targetdbt = models.FloatField(null=True)
+    targetwbt = models.FloatField(null=True)
     mc1 = models.FloatField()
     mc2 = models.FloatField()
     mc3 = models.FloatField()
@@ -125,6 +139,31 @@ class LotData(models.Model):
     )  # 0 = 'ON'; 1 = 'OFF'. Displayed as 'ON' or 'OFF' in plots
     reserved = models.FloatField(null=True)  # reserved field
     details = models.CharField(max_length=100, null=True)  # reserved field
+
+    def save(self, *args, **kwargs):
+        if self.dbt2 is not None and self.dbt2 > self.dbt1:
+            Td = self.dbt2
+            Tw = self.wbt2
+        else:
+            Td = self.dbt1
+            Tw = self.wbt1
+
+        self.rh = self.calculateRH(Td, Tw)
+        super().save(*args, **kwargs)
+
+    def calculateRH(self, Td, Tw):
+        # formula: http://www.1728.org/relhum.htm
+        try:
+            powerEd = (17.502 * Td) / (240.97 + Td)
+            Ed = 6.112 * math.exp(powerEd)
+            powerEw = (17.502 * Tw) / (240.97 + Tw)
+            Ew = 6.112 * math.exp(powerEw)
+            N = 0.66875
+            RH = (Ew - N * (1 + 0.00115 * Tw) * (Td - Tw)) / Ed * 100.0
+            RH = float(round(RH, 2))
+            return RH
+        except Exception as e:
+            return -1
 
     def __str__(self):
         formatted_time = self.time.strftime("%Y-%m-%d %H:%M")
