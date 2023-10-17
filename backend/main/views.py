@@ -342,7 +342,7 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
 
         file_name = f'Lot_Data_{pk}'
         sheet_name = f'Lot_Data-{pk}'
-        headers = ['ID', 'Time', 'Command', 'AMC', 'RH', 'DBT1', 'DBT2', 'WBT1', 'WBT2', 'MC1', 'MC2', 'MC3', 'MC4', 'MC5', 'MC6', 'MC7', 'MC8', 'Wood Temp 1', 'Wood Temp 2', 'Flaps', 'Heat', 'Spray', 'Fan CW', 'Fan CCW', 'Reserved', 'Details']
+        headers = ['ID', 'Time', 'Command', 'AMC', 'RH', 'DBT1', 'DBT2', 'Target DBT', 'WBT1', 'WBT2', 'Target WBT', 'MC1', 'MC2', 'MC3', 'MC4', 'MC5', 'MC6', 'MC7', 'MC8', 'Wood Temp 1', 'Wood Temp 2', 'Flaps', 'Heat', 'Spray', 'Fan CW', 'Fan CCW', 'Reserved', 'Details']
         response = export_excel(file_name, sheet_name, headers, data)
     
         return response

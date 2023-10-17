@@ -39,9 +39,9 @@ class LotExcelSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['start_time'] = instance.start_time.strftime('%d/%m/%Y, %H:%M:%S')
+        data['start_time'] = convert_date_to_string(instance.start_time)
         if instance.complete_time:
-            data['complete_time'] = instance.complete_time.strftime('%d/%m/%Y, %H:%M:%S')
+            data['complete_time'] = convert_date_to_string(instance.complete_time)
         if instance.duration:
             data['duration'] = str(instance.duration).split(".")[0]
         return data
@@ -67,10 +67,11 @@ class LotDataExcelSerializer(ModelSerializer):
 
     class Meta:
         model = LotData
-        fields = ('id', 'time', 'command_name', 'amc', 'rh', 'dbt1', 'dbt2', 'wbt1', 'wbt2', 'mc1', 'mc2', 'mc3', 'mc4', 'mc5', 'mc6', 'mc7', 'mc8', 'wood_temp1', 'wood_temp2', 'flaps', 'heat', 'spray', 'fan_cw', 'fan_ccw', 'reserved', 'details')
+        fields = ('id', 'time', 'command_name', 'amc', 'rh', 'dbt1', 'dbt2', 'targetdbt', 'wbt1', 'wbt2', 'targetwbt', 'mc1', 'mc2', 'mc3', 'mc4', 'mc5', 'mc6', 'mc7', 'mc8', 'wood_temp1', 'wood_temp2', 'flaps', 'heat', 'spray', 'fan_cw', 'fan_ccw', 'reserved', 'details')
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        data["time"] = convert_date_to_string(instance.time)
         for field_name, field in self.fields.items():
             if isinstance(field, serializers.FloatField) and field_name in data:
                 field_value = data[field_name]

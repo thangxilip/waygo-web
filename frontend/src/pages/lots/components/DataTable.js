@@ -60,7 +60,6 @@ export const LotsDataTable = ({ lotID }) => {
     {
       field: "dbt2",
       headerName: t("dbt2"),
-      type: "number",
       width: 80,
       sortable: false,
       filterable: false,
