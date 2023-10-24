@@ -60,8 +60,10 @@ function SignIn() {
       imgPosition="top"
       button={{ color: "dark", variant: "gradient" }}
     >
+      <ArgonTypography variant="h4" fontWeight="bold" textAlign="center" mb={3}>
+            {t("loginTitle")}
+      </ArgonTypography>
       <Card>
-        {/* <ArgonBox sx={{ backgroundImage: `url(${waygoImg})` }}></ArgonBox> */}
         <ArgonBox p={3} mb={1} textAlign="center">
           <ArgonTypography variant="h5" fontWeight="light">
             {t("pleaseLogIn")}

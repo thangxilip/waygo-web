@@ -1,6 +1,7 @@
 import { GridFilterInputValue } from "@mui/x-data-grid";
 import { GridFilterDateInput } from "./dateOperator";
 import i18n from 'configs/i18n';
+import { ReportStatusCode } from "./constants";
 
 export const removeAuthToken = () => {
   localStorage.clear();
@@ -21,8 +22,50 @@ export const getDarkModeFromStorage = () => {
 }
 
 export const getChamberStatus = (code) => {
-  if (code === 0) return "Operating";
-  else return "Idle";
+  if (code <= ReportStatusCode.ISSUE_OTHERS) {
+    code = ReportStatusCode.ISSUE_OTHERS
+  };
+
+  switch (code) {
+    case ReportStatusCode.IDLE:
+      return i18n.t('idle');
+    case ReportStatusCode.OPERATING:
+      return i18n.t('operating');
+    case ReportStatusCode.ISSUE_MODBUS_TCP:
+      return i18n.t('issue_modbus_tcp');
+    case ReportStatusCode.ISSUE_SENSOR_UNIT:
+      return i18n.t('issue_sensor_unit');
+    case ReportStatusCode.HALTED_CABINET_AUTO_SW:
+      return i18n.t('halted_cabinet_auto_sw');
+    case ReportStatusCode.ISSUE_EQUIPMENT_OVERLOAD:
+      return i18n.t('issue_equipment_overload');
+    case ReportStatusCode.ISSUE_OTHERS:
+      return i18n.t('issue_others');
+    default:
+      return i18n.t('unknown');
+  }
+};
+
+export const getChamberStatusClass = (code) => {
+  if (code <= ReportStatusCode.ISSUE_OTHERS) {
+    code = ReportStatusCode.ISSUE_OTHERS
+  };
+
+  switch (code) {
+    case ReportStatusCode.IDLE:
+      return 'info';
+    case ReportStatusCode.OPERATING:
+      return 'success';
+    case ReportStatusCode.ISSUE_MODBUS_TCP:
+    case ReportStatusCode.ISSUE_SENSOR_UNIT:
+    case ReportStatusCode.ISSUE_EQUIPMENT_OVERLOAD:
+    case ReportStatusCode.ISSUE_OTHERS:
+      return 'error';
+    case ReportStatusCode.HALTED_CABINET_AUTO_SW:
+      return 'secondary';
+    default:
+      return 'default';
+  }
 };
 
 export const secondsToDuration = (seconds, dd=i18n.t("days"), d=i18n.t("day")) => {

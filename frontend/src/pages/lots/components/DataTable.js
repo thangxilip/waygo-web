@@ -7,6 +7,7 @@ import Table from "./Table";
 import dayjs from "dayjs";
 import Checkbox from "@mui/material/Checkbox";
 import { useTranslation } from "react-i18next";
+import Tooltip from "@mui/material/Tooltip";
 
 export const LotsDataTable = ({ lotID }) => {
   const navigate = useNavigate();
@@ -32,9 +33,16 @@ export const LotsDataTable = ({ lotID }) => {
     {
       field: "command_name",
       headerName: t("command"),
-      width: 130,
+      width: 140,
       sortable: false,
       filterable: false,
+      renderCell: ({ row }) => {
+        return row.command_name && (
+          <Tooltip arrow={false} title={row.command_name} placement="right">
+            <div>{row.command_name}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "amc",
@@ -205,22 +213,22 @@ export const LotsDataTable = ({ lotID }) => {
         <Checkbox readOnly checked={row.fan_ccw === 1} />
       ),
     },
-    {
-      field: "details",
-      headerName: t("details"),
-      sortable: false,
-      // flex: 1,
-      width: 150,
-      filterable: false,
-    },
-    {
-      field: "reserved",
-      headerName: t("reserved"),
-      sortable: false,
-      // flex: 1,
-      width: 150,
-      filterable: false,
-    },
+    // {
+    //   field: "details",
+    //   headerName: t("details"),
+    //   sortable: false,
+    //   // flex: 1,
+    //   width: 150,
+    //   filterable: false,
+    // },
+    // {
+    //   field: "reserved",
+    //   headerName: t("reserved"),
+    //   sortable: false,
+    //   // flex: 1,
+    //   width: 150,
+    //   filterable: false,
+    // },
   ];
 
   return (

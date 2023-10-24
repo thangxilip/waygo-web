@@ -39,7 +39,7 @@ function CoverLayout({
           backgroundSize: "clamp(280px, 300px, 380px) auto",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          marginBottom: 12,
+          marginBottom: 11,
           // mixBlendMode: "darken",
         }}
       >

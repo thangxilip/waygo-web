@@ -35,7 +35,8 @@ class StatusReport(models.Model):
     server_time = models.DateTimeField(
         auto_now_add=True
     )  # auto created when record is added
-    status_code = models.IntegerField()  # 0 = operating; >0 = idle
+    # 0 = Idle; 1 = Operating; -1 = Issue: Modbus TCP; -2 = Issue: Sensor Unit; -3 = Halted: Cabinet Auto SW; -4 = Issue: Equipment Overload; <=-5 = Issue: Others
+    status_code = models.IntegerField()  
     lot = models.ForeignKey("Lot", on_delete=models.SET_NULL, null=True) # only has value when status_code = 1
     details = models.CharField(max_length=100, null=True)
 

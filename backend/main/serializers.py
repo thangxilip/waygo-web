@@ -1,3 +1,4 @@
+from main.constants import ReportStatusCode
 from main.utils import convert_date_to_string, convert_string_to_date, time_since, duration_since
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
@@ -95,13 +96,14 @@ class StatusReportListSerializer(ModelSerializer):
             return {
                 'amc': round(lot_data.amc),
                 'dbt': round((lot_data.dbt1 + lot_data.dbt2) / 2.0 if (lot_data.dbt2 is not None and lot_data.dbt2 != -1) else lot_data.dbt1, 2),
-                'wbt': round((lot_data.wbt1 + lot_data.wbt2) / 2.0 if (lot_data.wbt2 is not None and lot_data.wbt2 != -1) else lot_data.wbt1, 2)
+                'wbt': round((lot_data.wbt1 + lot_data.wbt2) / 2.0 if (lot_data.wbt2 is not None and lot_data.wbt2 != -1) else lot_data.wbt1, 2),
+                'command_name': lot_data.command_name
             }
         return None
     
     def get_last_completed_lot(self, instance):
         lot = None
-        if instance.status_code == 1: # idle
+        if instance.status_code == ReportStatusCode.IDLE:
             lot_instance = Lot.objects.filter(chamber=instance.chamber, company=instance.company).order_by('-complete_time')
             lot = LotSerializer(instance=lot_instance[0], many=False).data if lot_instance.exists() else None
         return lot

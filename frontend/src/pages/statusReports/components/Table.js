@@ -150,7 +150,7 @@ const Table = ({
         if (!filterItem.field || !filterItem.value || !filterItem.operator) {
           return null;
         }
-
+        
         return (params) => {
           return Number(params.value) === Number(filterItem.value);
         };
@@ -170,10 +170,13 @@ const Table = ({
             value={item.value}
             onChange={(e) => applyValue({ ...item, value: e.target.value })}
           >
-            <MenuItem value={"0"}>
-              {t("operating")}
-            </MenuItem>
-            <MenuItem value={1}>{t("idle")}</MenuItem>
+            <MenuItem value={"0"}>{t("idle")}</MenuItem>
+            <MenuItem value={1}>{t("operating")}</MenuItem>
+            <MenuItem value={-1}>{t("issue_modbus_tcp")}</MenuItem>
+            <MenuItem value={-2}>{t("issue_sensor_unit")}</MenuItem>
+            <MenuItem value={-3}>{t("halted_cabinet_auto_sw")}</MenuItem>
+            <MenuItem value={-4}>{t("issue_equipment_overload")}</MenuItem>
+            <MenuItem value={-5}>{t("issue_others")}</MenuItem>
           </Select>
         </Box>
       ),

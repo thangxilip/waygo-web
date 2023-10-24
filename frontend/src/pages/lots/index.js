@@ -11,6 +11,7 @@ import BubbleChartIcon from "@mui/icons-material/BubbleChart";
 import dayjs from "dayjs";
 import { secondsToDuration } from "utils/helper";
 import { useTranslation } from "react-i18next";
+import Tooltip from "@mui/material/Tooltip";
 
 export const Lots = () => {
   const navigate = useNavigate();
@@ -60,6 +61,13 @@ export const Lots = () => {
       width: 155,
       sortable: false,
       filterable: false,
+      renderCell: ({ row }) => {
+        return row.id && (
+          <Tooltip arrow={false} title={row.id} placement="right">
+            <div>{row.id}</div>
+          </Tooltip>
+        );
+      },
     },
 
     {
@@ -68,6 +76,13 @@ export const Lots = () => {
       width: 210,
       sortable: false,
       filterable: false,
+      renderCell: ({ row }) => {
+        return row.program_name && (
+          <Tooltip arrow={false} title={row.program_name} placement="right">
+            <div>{row.program_name}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "total_commands",
@@ -82,6 +97,13 @@ export const Lots = () => {
       sortable: false,
       width: 135,
       type: "string",
+      renderCell: ({ row }) => {
+        return row.species && (
+          <Tooltip arrow={false} title={row.species} placement="right">
+            <div>{row.species}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "quantity",

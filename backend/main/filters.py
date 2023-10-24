@@ -14,7 +14,22 @@ class LotFilterSet(django_filter.FilterSet):
             'complete_time': ['lte', 'gte', 'lt', 'gt']
         }
 
+class CustomStatusFilter(django_filter.Filter):
+
+    def filter(self, qs, value):
+        if value is not None:
+            value = int(value)
+            if self.lookup_expr == 'exact' and value <= -5:
+                # Use less than or equals filter when 'exact' and value is <= -5
+                return qs.filter(**{self.field_name + '__lte': value})
+            else:
+                # Use the default filter method for all other cases
+                return super().filter(qs, value)
+        return qs
+
 class StatusReportFilterSet(django_filter.FilterSet):
+    # Define a custom filter for the status_code field
+    status_code = CustomStatusFilter(field_name='status_code')
 
     class Meta:
         model = StatusReport

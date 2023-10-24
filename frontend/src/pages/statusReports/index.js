@@ -4,9 +4,14 @@ import { Endpoints } from "utils/httpServices";
 import Table from "./components/Table";
 import dayjs from "dayjs";
 import Chip from "@mui/material/Chip";
+import Tooltip from "@mui/material/Tooltip";
 import relativeTime from "dayjs/plugin/relativeTime";
 import updateLocale from "dayjs/plugin/updateLocale";
-import { secondsToDuration } from "utils/helper";
+import {
+  secondsToDuration,
+  getChamberStatus,
+  getChamberStatusClass,
+} from "utils/helper";
 import { useTranslation } from "react-i18next";
 import localeVi from "dayjs/locale/vi";
 import localeEn from "dayjs/locale/en";
@@ -49,17 +54,23 @@ const StatusReports = () => {
     {
       field: "status_code",
       headerName: t("status"),
-      width: 120,
+      width: 140,
       sortable: false,
       filterable: true,
       type: "string",
       renderCell: ({ row }) => (
-        <Chip
-          size="small"
-          sx={{ color: "white.main", fontWeight: 600, width: 90 }}
-          color={row.status_code === 0 ? "success" : "info"}
-          label={row.status_code === 0 ? t("operating") : t("idle")}
-        />
+        <Tooltip
+          arrow={false}
+          title={getChamberStatus(row.status_code)}
+          placement="right"
+        >
+          <Chip
+            size="small"
+            sx={{ color: "white.main", fontWeight: 600, width: 100 }}
+            color={getChamberStatusClass(row.status_code)}
+            label={getChamberStatus(row.status_code)}
+          />
+        </Tooltip>
       ),
     },
     {
@@ -114,6 +125,13 @@ const StatusReports = () => {
       sortable: false,
       filterable: false,
       valueGetter: ({ row }) => row.lot?.id,
+      renderCell: ({ row }) => {
+        return row.lot?.id && (
+          <Tooltip arrow={false} title={row.lot?.id} placement="right">
+            <div>{row.lot?.id}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "lot_species",
@@ -122,6 +140,13 @@ const StatusReports = () => {
       filterable: false,
       width: 170,
       valueGetter: ({ row }) => row.lot?.species,
+      renderCell: ({ row }) => {
+        return row.lot?.species && (
+          <Tooltip arrow={false} title={row.lot?.species} placement="right">
+            <div>{row.lot?.species}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "lot_quantity",
@@ -154,6 +179,21 @@ const StatusReports = () => {
       width: 80,
       filterable: false,
       valueGetter: ({ row }) => row.latest_lot_data?.wbt,
+    },
+    {
+      field: "latest_lot_data_command_name",
+      headerName: t("command"),
+      sortable: false,
+      width: 140,
+      filterable: false,
+      valueGetter: ({ row }) => row.latest_lot_data?.command_name,
+      renderCell: ({ row }) => {
+        return row.latest_lot_data?.command_name && (
+          <Tooltip arrow={false} title={row.latest_lot_data?.command_name} placement="right">
+            <div>{row.latest_lot_data?.command_name}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "total_time",

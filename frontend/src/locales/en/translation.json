@@ -69,6 +69,12 @@
     "chambers": "Chambers",
     "operating": "Operating",
     "idle": "Idle",
+    "issue_modbus_tcp": "Issue: Modbus TCP",
+    "issue_sensor_unit": "Issue: Sensor Unit",
+    "halted_cabinet_auto_sw": "Halted: Cabinet Auto SW",
+    "issue_equipment_overload": "Issue: Equipment Overload",
+    "issue_others": "Issue: Others",
+    "unknown": "Unknown",
     "value": "Value",
     "back": "Back",
     "data": "Data",
@@ -85,5 +91,6 @@
     "lessThanEquals": "less than or equals",
     "lessThan": "less than",
     "days": "days",
-    "day": "day"
+    "day": "day",
+    "loginTitle": "Waygo Timber Drying Technology"
 }

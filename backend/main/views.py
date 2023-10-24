@@ -9,7 +9,8 @@ import json
 from django.db import transaction
 from django.db.models import Q, Sum, ExpressionWrapper, F, Max, Min, Max, Subquery, OuterRef, Count, Prefetch
 from django.db.models.fields import DurationField, FloatField
-from main.utils import convert_string_to_date
+from main.constants import ReportStatusCode
+from main.utils import convert_string_to_date, get_chamber_status
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets, status
@@ -340,8 +341,8 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         
         data = LotDataExcelSerializer(instance=queryset, many=True).data
 
-        file_name = f'Lot_Data_{pk}'
-        sheet_name = f'Lot_Data-{pk}'
+        file_name = f'[{pk}]LotData'
+        sheet_name = f'{pk}_LotData'
         headers = ['ID', 'Time', 'Command', 'AMC', 'RH', 'DBT1', 'DBT2', 'Target DBT', 'WBT1', 'WBT2', 'Target WBT', 'MC1', 'MC2', 'MC3', 'MC4', 'MC5', 'MC6', 'MC7', 'MC8', 'Wood Temp 1', 'Wood Temp 2', 'Flaps', 'Heat', 'Spray', 'Fan CW', 'Fan CCW', 'Reserved', 'Details']
         response = export_excel(file_name, sheet_name, headers, data)
     
@@ -418,8 +419,8 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
         data = self.get_paginated_response(serializer.data)
 
         chamber_summary = queryset.aggregate(
-            total_idle_chambers=Count('chamber', filter=~Q(status_code=0)),
-            total_operating_chambers=Count('chamber', filter=Q(status_code=0)),
+            total_idle_chambers=Count('chamber', filter=Q(status_code=ReportStatusCode.IDLE)),
+            total_operating_chambers=Count('chamber', filter=Q(status_code=ReportStatusCode.OPERATING)),
         )
 
         response = {
@@ -445,7 +446,7 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
 
             data.append({
                 'chamber': item.get('chamber'),
-                'status': item.get('status_code'),
+                'status': get_chamber_status(item.get('status_code')),
                 'last_complete': item.get('last_complete'),
                 'since_last_complete': item.get('since_last_complete'),
                 'last_report': item.get('last_report'),
@@ -459,8 +460,8 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
                 'total_time': item.get('total_time')
             })
 
-        file_name = f'Status_Report'
-        sheet_name = f'Status_Report'
+        file_name = f'StatusReport'
+        sheet_name = f'StatusReport'
         headers = ['Chamber', 'Status', 'Last Complete', 'Since Last Complete', 'Last Report', 'Since Last Report', 'Lot ID', 'Species', 'Quantity', 'AMC', 'DBT', 'WBT', 'Total Time']
         
         response = export_excel(file_name, sheet_name, headers, data)
@@ -533,9 +534,11 @@ def statistic(request):
 
 
 def export_excel(file_name, sheet_name, headers, data):
+    time_now = datetime.now().strftime("%Y%m%d%H%M")
+    excel_filename = f"{file_name}_{time_now}.xlsx"
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="{file_name}.xlsx"'
-        
+    response['Content-Disposition'] = f'attachment; filename="{excel_filename}"'
+   
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
     worksheet.title = f"{sheet_name}"
