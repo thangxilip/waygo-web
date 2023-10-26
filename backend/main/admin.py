@@ -38,6 +38,7 @@ admin.site.register(Company)
 admin.site.register(Lot)
 admin.site.register(LotData)
 admin.site.register(StatusReport)
+admin.site.register(Notification)
 
 @admin.register(CompanyAPIKey)
 class CompanyAPIKeyModelAdmin(APIKeyModelAdmin):

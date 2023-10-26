@@ -40,6 +40,12 @@ class StatusReport(models.Model):
     lot = models.ForeignKey("Lot", on_delete=models.SET_NULL, null=True) # only has value when status_code = 1
     details = models.CharField(max_length=100, null=True)
 
+    def __str__(self):
+        formatted_server_time = self.server_time.strftime("%Y-%m-%d %H:%M")
+        return (
+            f"{self.id} - Chamber: {self.chamber} - Time: {formatted_server_time}"
+        )
+
 
 """
 Note that in production I want to be able to create new users and companies 
@@ -176,3 +182,6 @@ class Notification(models.Model):
     time = models.DateTimeField(null=True)
     type = models.CharField(max_length=100, null=True)
     details = models.CharField(max_length=1000, null=True)
+
+    def __str__(self):
+        return f"{self.id}"
