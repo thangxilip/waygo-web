@@ -483,12 +483,12 @@ class NotificationViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # Check if there are at least 200 records
-        if Notification.objects.count() > 200: 
-            # Get the ID of the notification at index 200
-            id_index_200 = Notification.objects.values_list('pk', flat=True).order_by('-time')[199]
+        if Notification.objects.count() >= 200: 
+            # Get the ID of the notification at index 200 (order by id desc)
+            id_index_200 = Notification.objects.values_list('pk', flat=True).order_by('-id')[199]
 
-            # Delete records that have an ID > ID of item at index 200
-            Notification.objects.filter(pk__gt=id_index_200).delete()
+            # Delete records that have an ID <= found ID
+            Notification.objects.filter(pk__lte=id_index_200).delete()
 
         return super().create(request, *args, **kwargs)
 
