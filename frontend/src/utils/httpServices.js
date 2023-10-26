@@ -42,5 +42,6 @@ export const Endpoints = {
   statistics: "/statistic/",
   exportLotExcel: "lots/lot-excel",
   exportLotDataExcel: (lotId) => `lots/${lotId}/lot-data-excel`,
-  exportStatusReportExcel: "/status-report/excel"
+  exportStatusReportExcel: "/status-report/excel",
+  notifications: "/notifications/"
 };

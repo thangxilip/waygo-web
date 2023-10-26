@@ -92,5 +92,9 @@
     "lessThan": "less than",
     "days": "days",
     "day": "day",
-    "loginTitle": "Waygo Timber Drying Technology"
+    "loginTitle": "Waygo Timber Drying Technology",
+    "notifications": "Notifications",
+    "fromChamber": "From chamber",
+    "type": "Type",
+    "lineNo": "No."
 }

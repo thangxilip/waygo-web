@@ -1,6 +1,6 @@
-from django_filters import rest_framework as django_filter,  DateTimeFromToRangeFilter
+from django_filters import rest_framework as django_filter
 
-from main.models import Lot, StatusReport
+from main.models import Lot, StatusReport, Notification
 
 
 class LotFilterSet(django_filter.FilterSet):
@@ -35,4 +35,14 @@ class StatusReportFilterSet(django_filter.FilterSet):
         model = StatusReport
         fields = {
             'status_code': ['exact'],
+        }
+
+class NotificationFilterSet(django_filter.FilterSet):
+
+    class Meta:
+        model = Notification
+        fields = {
+            'from_chamber': ['exact'],
+            'time': ['lte', 'gte', 'exact', 'lt', 'gt'],
+            'type': ['exact']
         }

@@ -169,3 +169,10 @@ class LotData(models.Model):
     def __str__(self):
         formatted_time = self.time.strftime("%Y-%m-%d %H:%M")
         return f"{self.lot_id}. {self.time}"
+
+
+class Notification(models.Model):
+    from_chamber = models.CharField(max_length=10, null=True)
+    time = models.DateTimeField(null=True)
+    type = models.CharField(max_length=100, null=True)
+    details = models.CharField(max_length=1000, null=True)

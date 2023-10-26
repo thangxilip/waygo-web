@@ -18,10 +18,10 @@ from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.response import Response
 from main.permissions import HasAPIKeyOrIsAuthenticated
 
-from main.filters import LotFilterSet, StatusReportFilterSet
-from main.models import Lot, LotData, StatusReport
+from main.filters import LotFilterSet, StatusReportFilterSet, NotificationFilterSet
+from main.models import Lot, LotData, StatusReport, Notification
 from main.pagination import CustomPageNumberPagination
-from main.serializers import LotSerializer, LotDataSerializer, StatusReportSerializer, StatusReportListSerializer, LotExcelSerializer, LotDataExcelSerializer
+from main.serializers import LotSerializer, LotDataSerializer, StatusReportSerializer, StatusReportListSerializer, LotExcelSerializer, LotDataExcelSerializer, NotificationSerializer
 import openpyxl
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
@@ -466,6 +466,29 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
         
         response = export_excel(file_name, sheet_name, headers, data)
         return response
+
+
+class NotificationViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
+    permission_classes = (HasAPIKeyOrIsAuthenticated,)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = NotificationFilterSet
+    pagination_class = CustomPageNumberPagination
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.all().order_by("-time")
+    
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        # Check if there are at least 200 records
+        if Notification.objects.count() > 200: 
+            # Get the ID of the notification at index 200
+            id_index_200 = Notification.objects.values_list('pk', flat=True).order_by('-time')[199]
+
+            # Delete records that have an ID > ID of item at index 200
+            Notification.objects.filter(pk__gt=id_index_200).delete()
+
+        return super().create(request, *args, **kwargs)
 
 
 @swagger_auto_schema(methods=['get'], manual_parameters=[])

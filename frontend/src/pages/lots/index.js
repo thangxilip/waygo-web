@@ -115,7 +115,7 @@ export const Lots = () => {
     {
       field: "start_time",
       headerName: t("startTime"),
-      width: 150,
+      width: 170,
       sortable: false,
       type: "date",
       valueGetter: (params) => new Date(params.row.start_time),
@@ -126,7 +126,7 @@ export const Lots = () => {
       field: "complete_time",
       headerName: t("completeTime"),
       sortable: false,
-      width: 170,
+      width: 190,
       type: "date",
       valueGetter: (params) =>
         params.row.complete_time && new Date(params.row.complete_time),

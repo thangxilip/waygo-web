@@ -2,8 +2,7 @@ from main.constants import ReportStatusCode
 from main.utils import convert_date_to_string, convert_string_to_date, time_since, duration_since
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from main.models import Lot, LotData, StatusReport, Company, User
-import datetime
+from main.models import Lot, LotData, StatusReport, Company, User, Notification
 
 class CompanySerializer(ModelSerializer):
 
@@ -129,4 +128,10 @@ class StatusReportListSerializer(ModelSerializer):
 class StatusReportSerializer(ModelSerializer):
     class Meta:
         model = StatusReport
+        fields = '__all__'
+
+
+class NotificationSerializer(ModelSerializer):
+    class Meta:
+        model = Notification
         fields = '__all__'

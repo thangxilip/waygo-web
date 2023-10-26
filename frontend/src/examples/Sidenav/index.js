@@ -26,6 +26,7 @@ import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useTranslation } from "react-i18next";
 
 // Argon Dashboard 2 MUI context
@@ -54,16 +55,11 @@ function Sidenav({ color, brand, brandName, ...rest }) {
       icon: <AssessmentIcon />,
       path: "/statistics",
     },
-    // {
-    //   title: "Technology",
-    //   icon: <ComputerIcon />,
-    //   path: "/technology",
-    // },
-    // {
-    //   title: "Help",
-    //   icon: <HelpCenterIcon />,
-    //   path: "/help",
-    // },
+    {
+      title: t("notifications"),
+      icon: <NotificationsIcon />,
+      path: "/notifications",
+    },
   ];
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
