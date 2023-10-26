@@ -1,6 +1,6 @@
 from django_filters import rest_framework as django_filter
 
-from main.models import Lot, StatusReport, Notification
+from main.models import Lot, StatusReport, Notification, LotData
 
 
 class LotFilterSet(django_filter.FilterSet):
@@ -12,6 +12,20 @@ class LotFilterSet(django_filter.FilterSet):
             'chamber': ['exact'],
             'start_time': ['lte', 'gte', 'lt', 'gt'],
             'complete_time': ['lte', 'gte', 'lt', 'gt']
+        }
+
+
+class LotDataFilterSet(django_filter.FilterSet):
+
+    class Meta:
+        model = LotData
+        fields = {
+            'dbt1': ['gte'],
+            'dbt2': ['gte'],
+            'wbt1': ['gte'],
+            'wbt2': ['gte'],
+            'wood_temp1': ['gte'],
+            'wood_temp2': ['gte'],
         }
 
 class CustomStatusFilter(django_filter.Filter):

@@ -78,6 +78,8 @@ export const LotsDataPlot = ({ lotID }) => {
           download: `<img src=${print} alt="print" width="16px"/>`,
         },
       },
+      events: {
+      },
     },
     stroke: {
       show: true,
@@ -88,11 +90,33 @@ export const LotsDataPlot = ({ lotID }) => {
       dashArray: 0,
     },
     tooltip: {
-      x: {
-        formatter: function (args) {
-          return dayjs(args).format("DD/MM/YYYY HH:mm");
-        },
-        show: true,
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const date =
+          w.globals.initialSeries[seriesIndex].data[dataPointIndex].x;
+        const seriesData = w.globals.initialSeries
+          .map((series, index) => {
+            return `
+              <div style='color: ${colors[index]}; width:40px;'>
+                <div >${series.name}</div>
+                <div>${series.data[dataPointIndex].y}</div>
+              </div>
+            `;
+          })
+          .filter(
+            (series, index) =>
+              w.globals.series[index] && w.globals.series[index].length > 0
+          )
+          .join(" ");
+        return `
+          <div class='apexcharts-tooltip-row'>
+            <div>
+              ${dayjs(date).format("DD/MM/YYYY HH:mm")}
+            </div>
+            <div class='apexcharts-tooltip-row'>
+              ${seriesData}
+            </div>
+          </div>
+        `;
       },
     },
     xaxis: {
@@ -142,7 +166,7 @@ export const LotsDataPlot = ({ lotID }) => {
             y: curr[key.toLowerCase()],
           };
 
-          if (obj.y) {
+          if (obj.y && obj.y > -1) {
             if (acc?.[key]) {
               acc[key].push(obj);
             } else {
@@ -171,7 +195,7 @@ export const LotsDataPlot = ({ lotID }) => {
       <Box sx={{ mb: 0 }}>
         <Paper elevation={3} sx={{ pt: 2, pb: 2 }}>
           <Box>
-            <Box sx={{ display: "flex", flexDirection: "row", gap: 5, ml: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: 5, ml: 2, mb: 5 }}>
               <Box>
                 <Typography sx={{ fontSize: 12 }} color="text.secondary">
                   {t("chamber")}

@@ -18,7 +18,7 @@ from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.response import Response
 from main.permissions import HasAPIKeyOrIsAuthenticated
 
-from main.filters import LotFilterSet, StatusReportFilterSet, NotificationFilterSet
+from main.filters import LotFilterSet, StatusReportFilterSet, NotificationFilterSet, LotDataFilterSet
 from main.models import Lot, LotData, StatusReport, Notification
 from main.pagination import CustomPageNumberPagination
 from main.serializers import LotSerializer, LotDataSerializer, StatusReportSerializer, StatusReportListSerializer, LotExcelSerializer, LotDataExcelSerializer, NotificationSerializer
@@ -254,13 +254,15 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
     @swagger_auto_schema(
         responses={200: ""}, )
     @action(
-        detail=True, methods=['get'], url_name='lot_data', url_path='lot-data'
+        detail=True, methods=['get'], url_name='lot_data', url_path='lot-data', filterset_class=LotDataFilterSet
     )
     def lot_lotdata(self, request, pk=None):
         if self.request.user.is_superuser:
             lot_data = LotData.objects.filter(lot_id=pk).order_by("-time")
         else:
             lot_data = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.company).order_by("-time")
+
+        lot_data = self.filter_queryset(lot_data)
     
         if self.request.query_params.get('get_all', 'False').lower() == 'true':
             return Response(LotDataSerializer(instance=lot_data, many=True).data, status=status.HTTP_200_OK)

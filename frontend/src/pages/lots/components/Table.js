@@ -153,33 +153,22 @@ const Table = ({
       });
   };
 
-  const optionalFields = [
-    "wbt2",
-    "dbt2",
-    "rh",
-    "mc5",
-    "mc6",
-    "mc7",
-    "mc8",
-    "wood_temp1",
-    "wood_temp2",
-  ];
-
   const columnsWithNewOperators = useMemo(() => {
     if (results && results.length) {
       return columns
         .filter((column) =>
           results.some(
             (item) =>
-              !optionalFields.includes(column.field) ||
-              (optionalFields.includes(column.field) &&
+              !column.optional ||
+              (column.optional &&
                 !!item[column.field] &&
                 item[column.field] !== -1)
           )
         )
         .map((column) => ({
           ...column,
-          filterOperators: filterOpertorMap[column.type],
+          filterOperators:
+            column.filterOperators || filterOpertorMap[column.type],
         }));
     }
 

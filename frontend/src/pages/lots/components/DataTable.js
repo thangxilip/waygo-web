@@ -8,10 +8,19 @@ import dayjs from "dayjs";
 import Checkbox from "@mui/material/Checkbox";
 import { useTranslation } from "react-i18next";
 import Tooltip from "@mui/material/Tooltip";
+import { GridFilterInputValue } from "@mui/x-data-grid";
 
 export const LotsDataTable = ({ lotID }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const numberFilterOperators = [
+    {
+      label: t("greaterThanEquals"),
+      value: "__gte",
+      InputComponent: GridFilterInputValue,
+    },
+  ];
 
   const columns = [
     {
@@ -37,10 +46,12 @@ export const LotsDataTable = ({ lotID }) => {
       sortable: false,
       filterable: false,
       renderCell: ({ row }) => {
-        return row.command_name && (
-          <Tooltip arrow={false} title={row.command_name} placement="right">
-            <div>{row.command_name}</div>
-          </Tooltip>
+        return (
+          row.command_name && (
+            <Tooltip arrow={false} title={row.command_name} placement="right">
+              <div>{row.command_name}</div>
+            </Tooltip>
+          )
         );
       },
     },
@@ -57,20 +68,26 @@ export const LotsDataTable = ({ lotID }) => {
       sortable: false,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "dbt1",
       headerName: t("dbt1"),
-      width: 80,
+      width: 90,
       sortable: false,
-      filterable: false,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
     },
     {
       field: "dbt2",
       headerName: t("dbt2"),
       width: 80,
       sortable: false,
-      filterable: false,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
     },
     {
       field: "targetdbt",
@@ -83,15 +100,20 @@ export const LotsDataTable = ({ lotID }) => {
       field: "wbt1",
       headerName: t("wbt1"),
       sortable: false,
-      width: 80,
-      filterable: false,
+      width: 90,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
     },
     {
       field: "wbt2",
       headerName: t("wbt2"),
       sortable: false,
       width: 80,
-      filterable: false,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
     },
     {
       field: "targetwbt",
@@ -134,6 +156,7 @@ export const LotsDataTable = ({ lotID }) => {
       sortable: false,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "mc6",
@@ -141,6 +164,7 @@ export const LotsDataTable = ({ lotID }) => {
       sortable: false,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "mc7",
@@ -148,6 +172,7 @@ export const LotsDataTable = ({ lotID }) => {
       sortable: false,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "mc8",
@@ -155,20 +180,27 @@ export const LotsDataTable = ({ lotID }) => {
       sortable: false,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "wood_temp1",
       headerName: t("woodTemp1"),
       sortable: false,
-      width: 130,
-      filterable: false,
+      width: 140,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
     },
     {
       field: "wood_temp2",
       headerName: t("woodTemp2"),
       sortable: false,
-      width: 130,
-      filterable: false,
+      width: 140,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
     },
 
     {
