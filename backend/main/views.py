@@ -262,6 +262,9 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         else:
             lot_data = LotData.objects.filter(lot_id=pk, lot__company=self.request.user.company).order_by("-time")
 
+        if self.request.query_params.get('get_all', 'False').lower() == 'true':
+            return Response(LotDataSerializer(instance=lot_data, many=True).data, status=status.HTTP_200_OK)
+
         lot_data = self.filter_queryset(lot_data)
 
         lot_data_summary = lot_data.aggregate(
@@ -270,13 +273,8 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
                 output_field=DurationField()
             ),
         )
-    
-        if self.request.query_params.get('get_all', 'False').lower() == 'true':
-            response = LotDataSerializer(instance=lot_data, many=True).data
-            return Response({**response, "lot_data_summary": lot_data_summary}, status=status.HTTP_200_OK)
 
-        lot_data = self.paginate_queryset(lot_data)
-        data = self.get_paginated_response(LotDataSerializer(instance=lot_data, many=True).data)
+        data = self.get_paginated_response(LotDataSerializer(instance=self.paginate_queryset(lot_data), many=True).data)
         
         response = {
             **data.data,
@@ -423,12 +421,11 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
     def chamber_latest_status(self, request):
         queryset = self.get_queryset()
 
-        filter_queryset = self.filter_queryset(queryset)
-
         if self.request.query_params.get('get_all', 'False').lower() == 'true':
-            serializer = self.get_serializer(instance=filter_queryset, many=True)
+            serializer = self.get_serializer(instance=queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
+        filter_queryset = self.filter_queryset(queryset)
         paginated_queryset = self.paginate_queryset(filter_queryset)
         
         serializer = self.get_serializer(instance=paginated_queryset, many=True)

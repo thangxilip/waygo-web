@@ -20,22 +20,24 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-const keys = [
-  "AMC",
-  "RH",
-  "MC1",
-  "MC2",
-  "MC3",
-  "MC4",
-  "MC5",
-  "MC6",
-  "MC7",
-  "MC8",
-  "DBT1",
-  "DBT2",
-  "WBT1",
-  "WBT2",
-];
+const keys = {
+  "amc": "AMC",
+  "rh": "RH",
+  "mc1": "MC1",
+  "mc2": "MC2",
+  "mc3": "MC3",
+  "mc4": "MC4",
+  "mc5": "MC5",
+  "mc6": "MC6",
+  "mc7": "MC7",
+  "mc8": "MC8",
+  "dbt1": "DBT1",
+  "dbt2": "DBT2",
+  "wbt1": "WBT1",
+  "wbt2": "WBT2",
+  "wood_temp1": 'WT1',
+  "wood_temp2": 'WT2',
+};
 
 const colors = [
   "#2E93fA",
@@ -52,6 +54,8 @@ const colors = [
   "#F1C40F",
   "#16A085",
   "#D35400",
+  "#FFAB22",
+  "#6C3483",
 ];
 
 export const LotsDataPlot = ({ lotID }) => {
@@ -156,21 +160,23 @@ export const LotsDataPlot = ({ lotID }) => {
   useEffect(() => {
     if (data) {
       const temp = data?.reduce((acc, curr) => {
-        keys.forEach((key) => {
+        Object.keys(keys).forEach((key) => {
           const time = dayjs(curr.time);
           const startOfHour = time
             .startOf("hour")
             .format("YYYY-MM-DD HH:mm:ss");
           const obj = {
             x: startOfHour, // or you can use endOfHour if you prefer
-            y: curr[key.toLowerCase()],
+            y: curr[key],
           };
 
+          const label = keys[key];
+
           if (obj.y && obj.y > -1) {
-            if (acc?.[key]) {
-              acc[key].push(obj);
+            if (acc?.[label]) {
+              acc[label].push(obj);
             } else {
-              acc[key] = [obj];
+              acc[label] = [obj];
             }
           }
         });
