@@ -94,6 +94,11 @@ export const LotsDataPlot = ({ lotID }) => {
       dashArray: 0,
     },
     tooltip: {
+      x: {
+        formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+          return dayjs(value).format("DD/MM HH:mm");
+        }
+      },
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const date =
           w.globals.initialSeries[seriesIndex].data[dataPointIndex].x;
@@ -125,7 +130,6 @@ export const LotsDataPlot = ({ lotID }) => {
     },
     xaxis: {
       type: "datetime",
-      tickAmount: 24, // Display 24 ticks for 24 hours (one tick per hour)
       labels: {
         formatter: function (value, timestamp, opts) {
           return dayjs(timestamp).format("DD/MM");
@@ -163,7 +167,6 @@ export const LotsDataPlot = ({ lotID }) => {
         Object.keys(keys).forEach((key) => {
           const time = dayjs(curr.time);
           const startOfHour = time
-            .startOf("hour")
             .format("YYYY-MM-DD HH:mm:ss");
           const obj = {
             x: startOfHour, // or you can use endOfHour if you prefer

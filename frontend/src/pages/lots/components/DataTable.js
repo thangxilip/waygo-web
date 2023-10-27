@@ -42,7 +42,7 @@ export const LotsDataTable = ({ lotID }) => {
     {
       field: "command_name",
       headerName: t("command"),
-      width: 140,
+      width: 150,
       sortable: false,
       filterable: false,
       renderCell: ({ row }) => {

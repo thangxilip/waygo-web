@@ -182,6 +182,15 @@ function DashboardNavbar({ absolute, light, isMini }) {
         <Toolbar sx={(theme) => navbarContainer(theme, { navbarType })}>
           {isMini ? null : (
             <ArgonBox sx={(theme) => navbarRow(theme, { isMini })}>
+              {user?.company?.name && (
+                <ArgonTypography
+                  variant="button"
+                  fontWeight="medium"
+                  color={transparentNavbar ? "white" : "black"}
+                >
+                  Welcome, {user?.company?.name}
+                </ArgonTypography>
+              )}
               <ArgonTypography
                 variant="button"
                 fontWeight="medium"
