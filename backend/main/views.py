@@ -525,8 +525,13 @@ def statistic(request):
         'total_chamber_quantity_dried': [],
     }
 
-    completed_lot_queryset = Lot.objects.filter(
-        company=request.user.company, complete_time__date__range=[start, end], complete_time__isnull=False
+    if request.user.is_superuser:
+        queryset = Lot.objects.all()
+    else:
+        queryset = Lot.objects.filter(company=request.user.company)
+
+    completed_lot_queryset = queryset.filter(
+        complete_time__date__range=[start, end], complete_time__isnull=False
     )
 
     wood_dried = completed_lot_queryset.values('species').annotate(total_quantity=Sum('quantity'))
@@ -543,8 +548,8 @@ def statistic(request):
             'y': chamber_quantity.get('total_quantity')
         })
     
-    lot_queryset = Lot.objects.filter(
-        Q(company=request.user.company) & Q(start_time__lte=end) &
+    lot_queryset = queryset.filter(
+        Q(start_time__lte=end) &
         (Q(complete_time__isnull=True) | Q(complete_time__gte=start))
     )
 
