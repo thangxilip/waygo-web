@@ -188,7 +188,7 @@ export const LotsDataPlot = ({ lotID }) => {
   }, [data]);
 
   return (
-    <ArgonBox>
+    <ArgonBox className="data-plot">
       <ArgonButton
         onClick={() => {
           navigate(-1);

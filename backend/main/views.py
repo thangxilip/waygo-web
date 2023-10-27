@@ -566,6 +566,10 @@ def statistic(request):
             operating_time_dict[chamber_id] += operation_time
             idle_time_dict[chamber_id] = time_period - operating_time_dict[chamber_id]
 
+            # fix for super user: idle_time of chamber_id can be < 0 because operating_time of chamber is value of multi-company
+            if idle_time_dict[chamber_id] < 0:
+                idle_time_dict[chamber_id] = 0
+
     data.update({
         'operation_time': operating_time_dict,
         'idle_time': idle_time_dict,

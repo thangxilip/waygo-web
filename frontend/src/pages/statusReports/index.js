@@ -121,7 +121,7 @@ const StatusReports = () => {
     {
       field: "lot_id",
       headerName: t("lotId"),
-      width: 150,
+      width: 155,
       sortable: false,
       filterable: false,
       valueGetter: ({ row }) => row.lot?.id,
