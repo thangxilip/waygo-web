@@ -101,6 +101,7 @@ const Table = ({
     count,
     results,
     lot_summary: lotSummary,
+    lot_data_summary: lotDataSummary
   } = data || { results: [], count: 0 };
 
   useEffect(() => {
@@ -304,6 +305,43 @@ const Table = ({
     );
   };
 
+  const LotDataSummary = () => {
+    const cardStyles = (theme) => ({
+      pt: 2,
+      pl: 2,
+      pr: 2,
+      [theme.breakpoints.down("sm")]: {
+        width: "100%",
+      },
+    });
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          rowGap: 0,
+          columnGap: 1,
+          flexWrap: "wrap",
+          "& > :not(style)": {
+            mb: 2,
+          },
+        }}
+      >
+        <Card elevation={3} sx={cardStyles}>
+          <CardContent>
+            <Typography align="center" sx={{ fontSize: 14 }} gutterBottom>
+              {t("totalTime")}
+            </Typography>
+            <Typography align="center" variant="h5">
+            <Duration durationInSeconds={lotDataSummary?.total_time} />
+            </Typography>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  };
+
   function CustomToolbar() {
     return (
       <GridToolbarContainer>
@@ -320,6 +358,7 @@ const Table = ({
   return (
     <>
       {type === "lot" && <LotSummary />}
+      {type === "lot_data" && <LotDataSummary/>}
       <Card
         elevation={3}
         sx={{
