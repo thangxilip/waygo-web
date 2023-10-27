@@ -91,9 +91,9 @@ class StatusReportListSerializer(ModelSerializer):
 
     def get_latest_lot_data(self, instance):
         if instance.lot and instance.lot.lot_data.exists():
-            lot_data = instance.lot.lot_data.first()
+            lot_data = instance.lot.lot_data.order_by('-time').first()
             return {
-                'amc': round(lot_data.amc),
+                'amc': round(lot_data.amc, 2),
                 'dbt': round((lot_data.dbt1 + lot_data.dbt2) / 2.0 if (lot_data.dbt2 is not None and lot_data.dbt2 != -1) else lot_data.dbt1, 2),
                 'wbt': round((lot_data.wbt1 + lot_data.wbt2) / 2.0 if (lot_data.wbt2 is not None and lot_data.wbt2 != -1) else lot_data.wbt1, 2),
                 'command_name': lot_data.command_name
