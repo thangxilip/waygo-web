@@ -152,7 +152,7 @@ const StatusReports = () => {
       field: "lot_quantity",
       headerName: t("quantity"),
       sortable: false,
-      width: 120,
+      width: 140,
       filterable: false,
       valueGetter: ({ row }) => row.lot?.quantity,
     },
@@ -184,7 +184,7 @@ const StatusReports = () => {
       field: "latest_lot_data_command_name",
       headerName: t("command"),
       sortable: false,
-      width: 150,
+      width: 160,
       filterable: false,
       valueGetter: ({ row }) => row.latest_lot_data?.command_name,
       renderCell: ({ row }) => {

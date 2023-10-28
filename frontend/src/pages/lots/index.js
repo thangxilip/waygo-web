@@ -109,7 +109,7 @@ export const Lots = () => {
       field: "quantity",
       headerName: t("quantity"),
       sortable: false,
-      width: 110,
+      width: 140,
       filterable: false,
     },
     {
