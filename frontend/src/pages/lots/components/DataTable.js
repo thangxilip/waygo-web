@@ -82,7 +82,7 @@ export const LotsDataTable = ({ lotID }) => {
     {
       field: "dbt2",
       headerName: t("dbt2"),
-      width: 80,
+      width: 90,
       sortable: false,
       type: "string",
       filterable: true,
@@ -109,7 +109,7 @@ export const LotsDataTable = ({ lotID }) => {
       field: "wbt2",
       headerName: t("wbt2"),
       sortable: false,
-      width: 80,
+      width: 90,
       type: "string",
       filterable: true,
       filterOperators: numberFilterOperators,
