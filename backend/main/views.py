@@ -12,8 +12,10 @@ from django.db.models.fields import DurationField, FloatField
 from main.constants import ReportStatusCode
 from main.utils import convert_string_to_date, get_chamber_status
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets, status
+from rest_framework.exceptions import NotFound
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.response import Response
 from main.permissions import HasAPIKeyOrIsAuthenticated
@@ -213,9 +215,16 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
 
     def get_queryset(self):
         if self.request.user.is_superuser:
-            return Lot.objects.all().order_by("-start_time")
-        qs = Lot.objects.filter(company=self.request.user.company).order_by("-start_time")
+            qs = Lot.objects.all().order_by("-start_time")
+        else:
+            qs = Lot.objects.filter(company=self.request.user.company).order_by("-start_time")
         return qs
+    
+    def get_object(self):
+        obj = super().get_object()
+        if not self.request.user.is_superuser and self.request.user.company.id != obj.company.id:
+            raise NotFound()
+        return obj
 
     def get_serializer_class(self):
         return LotSerializer
@@ -250,6 +259,21 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
         }
 
         return Response(response, status=status.HTTP_200_OK)
+    
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        if not request.user.is_superuser and request.user.company.id != request.data.get("company"):
+            raise NotFound("Not found company.")
+        
+        # close old lots
+        if request.user.is_superuser:
+            uncomplete_lots = Lot.objects.filter(chamber=request.data.get("chamber"), complete_time__isnull=True)
+        else:
+            uncomplete_lots = Lot.objects.filter(chamber=request.data.get("chamber"), company=request.user.company, complete_time__isnull=True)
+        
+        uncomplete_lots.update(complete_time=datetime.now().replace(microsecond=0))
+
+        return super().create(request, *args, **kwargs)
     
     @swagger_auto_schema(
         responses={200: ""}, )
@@ -319,7 +343,11 @@ class LotViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMo
     )
     def mark_lot_completed(self, request, pk=None):
         try:
-            completed_lot = Lot.objects.get(id=pk)
+            if request.user.is_superuser:
+                completed_lot = Lot.objects.get(id=pk)
+            else:
+                completed_lot = Lot.objects.get(id=pk, company=request.user.company)
+        
             completed_lot.complete_time = datetime.now().replace(microsecond=0)
             completed_lot.save()
             return Response(self.get_serializer(instance=completed_lot).data, status=status.HTTP_200_OK)
@@ -367,6 +395,17 @@ class LotDataViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     permission_classes = (HasAPIKeyOrIsAuthenticated,)
     serializer_class = LotDataSerializer
 
+    def create(self, request, *args, **kwargs):
+        try:
+            if request.user.is_superuser:
+                Lot.objects.get(id=request.data.get("lot"))
+            else:
+                Lot.objects.get(id=request.data.get("lot"), company=request.user.company)
+        except Lot.DoesNotExist:
+            raise NotFound("Not found lot.")
+
+        return super().create(request, *args, **kwargs)
+
 
 class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     permission_classes = (HasAPIKeyOrIsAuthenticated,)
@@ -406,9 +445,20 @@ class StatusReportViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
     
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        if not self.request.user.is_superuser and request.user.company.id != request.data.get("company"):
+            raise NotFound("Not found company.")
+        
+        try:
+            if request.user.is_superuser:
+                Lot.objects.get(id=request.data.get("lot"))
+            else:
+                Lot.objects.get(id=request.data.get("lot"), company=request.data.get("company"))
+        except Lot.DoesNotExist:
+            raise NotFound("Not found lot.")
+
         # Remove old reports of chamber
         StatusReport.objects.filter(
-            company=request.user.company,
+            company=request.data.get("company"),
             chamber=request.data.get("chamber")
         ).delete()
 
@@ -489,27 +539,40 @@ class NotificationViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixi
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
-        return Notification.objects.all().order_by("-time")
-    
+        if self.request.user.is_superuser:
+            queryset = Notification.objects.all().order_by("-time", "-id")
+        else:
+            queryset = Notification.objects.filter(company=self.request.user.company).order_by("-time", "-id")
+        
+        return queryset
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        # Check if there are at least 200 records
-        if Notification.objects.count() >= 200: 
-            # Get the ID of the notification at index 200 (order by id desc)
-            id_index_200 = Notification.objects.values_list('pk', flat=True).order_by('-id')[199]
+        if not self.request.user.is_superuser:
+            if request.user.company.id != request.data.get("company"):
+                raise NotFound("Not found company.")
+            
+        # Check if there are at least 200 records (records per company)
+        if Notification.objects.filter(company=request.data.get("company")).count() >= 200: 
+            # Get time of the notification at index 200 (order by time desc)
+            max_time = Notification.objects.values('time', 'id').order_by('-time', '-id')[199]
 
-            # Delete records that have an ID <= found ID
-            Notification.objects.filter(pk__lte=id_index_200).delete()
+            # Delete records that have the time <= found time
+            Notification.objects.filter(time__lte=max_time['time'], pk__lte=max_time['id']).delete()
 
         return super().create(request, *args, **kwargs)
+    
 
-
-@swagger_auto_schema(methods=['get'], manual_parameters=[])
+@swagger_auto_schema(methods=['get'], manual_parameters=[
+    openapi.Parameter('start', openapi.IN_QUERY, type=openapi.TYPE_STRING, format="date-time"),
+    openapi.Parameter('end', openapi.IN_QUERY, type=openapi.TYPE_STRING, format="date-time")
+])
 @api_view(["GET"])
 @permission_classes([HasAPIKeyOrIsAuthenticated, ])
 def statistic(request):
     start = convert_string_to_date(request.query_params.get('start'))
     end = convert_string_to_date(request.query_params.get('end'))
+    print(start, end, request.query_params)
     if not start and not end:
         return Response(
             {'message': 'start time and end time is required'},

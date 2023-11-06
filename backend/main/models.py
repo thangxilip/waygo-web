@@ -178,6 +178,7 @@ class LotData(models.Model):
 
 
 class Notification(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     from_chamber = models.CharField(max_length=10, null=True)
     time = models.DateTimeField(null=True)
     type = models.CharField(max_length=100, null=True)
