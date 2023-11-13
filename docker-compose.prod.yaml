@@ -54,6 +54,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8001:8001"
 
 networks:
   db_network:
