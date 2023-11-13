@@ -35,7 +35,7 @@
 FROM ubuntu:18.04
 
 # install nginx
-RUN apt-get update -y
+RUN apt-get update -y --fix-missing
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository -y ppa:nginx/stable
 RUN apt-get update -y
@@ -66,6 +66,9 @@ WORKDIR /etc/nginx
 
 # add entrypoing
 ADD docker-entrypoint.sh .
+
+RUN chmod +x /etc/nginx/docker-entrypoint.sh
+
 
 # make certs dir as volume
 VOLUME ["/etc/letsencrypt"]

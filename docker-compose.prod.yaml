@@ -43,7 +43,7 @@ services:
     container_name: frontend
     volumes:
       - ./frontend:/app
-      - /private/var/services/climguards/nginx/letsencrypt:/etc/letsencrypt
+      - ./private/var/services/timber.waygo.net/nginx/letsencrypt:/etc/letsencrypt
 
       # - ./certbot/www/:/var/www/certbot/:ro
     env_file:
