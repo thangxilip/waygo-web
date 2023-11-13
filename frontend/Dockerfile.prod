@@ -35,11 +35,11 @@
 FROM ubuntu:18.04
 
 # install nginx
-RUN apt-get update -y --fix-missing
-RUN apt-get install -y software-properties-common --fix-missing
-RUN add-apt-repository -y ppa:nginx/stable
-RUN apt-get update -y
-RUN apt-get install -y nginx
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:nginx/stable && \
+    apt-get update && \
+    apt-get install -y nginx
 
 # COPY --from=build /app/build /usr/share/nginx/html
 
