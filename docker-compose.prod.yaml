@@ -43,7 +43,9 @@ services:
     container_name: frontend
     volumes:
       - ./frontend:/app
-      - ./certbot/www/:/var/www/certbot/:ro
+      - /private/var/services/climguards/nginx/letsencrypt:/etc/letsencrypt
+
+      # - ./certbot/www/:/var/www/certbot/:ro
     env_file:
       - ./frontend/.env
     restart: always
@@ -55,14 +57,14 @@ services:
       - "80:80"
       - "443:443"
 
-  certbot:
-    container_name: certbot
-    image: certbot/certbot:latest
-    volumes:
-      - ./certbot/www/:/var/www/certbot/:rw
-      - ./certbot/conf/:/etc/letsencrypt/:rw
-    networks:
-      - db_network
+  # certbot:
+  #   container_name: certbot
+  #   image: certbot/certbot:latest
+  #   volumes:
+  #     - ./certbot/www/:/var/www/certbot/:rw
+  #     - ./certbot/conf/:/etc/letsencrypt/:rw
+  #   networks:
+  #     - db_network
 
 networks:
   db_network:

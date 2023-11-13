@@ -1,33 +1,73 @@
-# Base image
-FROM node:18-alpine as build
+# # Base image
+# FROM node:18-alpine as build
 
-# Set working directory
-WORKDIR /app
+# # Set working directory
+# WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# # Copy package.json and package-lock.json
+# COPY package*.json ./
 
-# Install dependencies
-RUN npm install -g npm
-RUN npm install
+# # Install dependencies
+# RUN npm install -g npm
+# RUN npm install
 
-# Copy the rest of the application files
-COPY . .
+# # Copy the rest of the application files
+# COPY . .
 
-# Build the application
-RUN npm run build
+# # Build the application
+# RUN npm run build
 
-# Production image
-FROM nginx:1.25.2-alpine
+# # Production image
+# FROM nginx:1.25.2-alpine
 
-# Copy the built files to Nginx's web root directory
-COPY --from=build /app/build /usr/share/nginx/html
+# # Copy the built files to Nginx's web root directory
+# COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy the Nginx configuration file
-COPY nginx.conf /etc/nginx/nginx.conf
+# # Copy the Nginx configuration file
+# COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 80, 443
+# # Expose port 80, 443
+# EXPOSE 80 443
+
+# # Start Nginx
+# CMD ["nginx", "-g", "daemon off;"]
+
+FROM ubuntu:18.04
+
+# install nginx
+RUN apt-get update -y
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository -y ppa:nginx/stable
+RUN apt-get update -y
+RUN apt-get install -y nginx
+
+# COPY --from=build /app/build /usr/share/nginx/html
+
+# install certbot
+RUN add-apt-repository ppa:certbot/certbot
+RUN apt-get update -y
+RUN apt-get install -y certbot python-certbot-nginx
+
+# deamon mode off
+RUN echo "\ndaemon off;" >> /etc/nginx/nginx.conf
+RUN chown -R www-data:www-data /var/lib/nginx
+
+# expose ports
 EXPOSE 80 443
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# add nginx staging conf
+ADD nginx.conf /etc/nginx/sites-available/timber.waygo.net
+
+# create symlinks
+RUN ln -s /etc/nginx/sites-available/timber.waygo.net /etc/nginx/sites-enabled/timber.waygo.net
+
+# work dir
+WORKDIR /etc/nginx
+
+# add entrypoing
+ADD docker-entrypoint.sh .
+
+# make certs dir as volume
+VOLUME ["/etc/letsencrypt"]
+
+CMD ["/etc/nginx/docker-entrypoint.sh"]
