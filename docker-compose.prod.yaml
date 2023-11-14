@@ -43,6 +43,7 @@ services:
     container_name: frontend
     volumes:
       - ./frontend:/app
+      - ./private/var/services/timber.waygo.net/nginx/letsencrypt:/etc/letsencrypt
     env_file:
       - ./frontend/.env
     restart: always
@@ -52,6 +53,8 @@ services:
       - rest
     ports:
       - "80:80"
+      - "443:443"
+      - "8001:8001"
 
 networks:
   db_network:
