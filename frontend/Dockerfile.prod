@@ -37,5 +37,5 @@ VOLUME ["/etc/letsencrypt"]
 # Expose port 80, 443
 EXPOSE 80 443
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Add crontab command to renew certificates (runs daily at midnight) and Start Nginx
+CMD echo "0 0 * * * certbot renew --dry-run" | crontab - && nginx -g "daemon off;"
