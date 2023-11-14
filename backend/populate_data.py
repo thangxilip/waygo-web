@@ -64,8 +64,8 @@ def generate_complete_lots(chamber):
     thickness_list = ['26mm thickness', '30mm thickness', '40mm thickness', '45mm thickness', '55mm thickness']
     command_list = ['reach[x, y, z]', 'keep[x, y, z]']
 
-    time_range_start = timezone.make_aware(datetime(2022, 6, 1, 1, 0, 0), timezone.get_default_timezone())
-    time_range_end = timezone.make_aware(datetime(2023, 7, 25, 1, 0, 0), timezone.get_default_timezone())
+    time_range_start = datetime(2022, 6, 1, 1, 0, 0)
+    time_range_end = datetime(2023, 7, 25, 1, 0, 0)
     #time_range_start = datetime.strptime("2023-01-01 01:00:00", "%Y-%m-%d %H:%M:%S")
     #time_range_end = datetime.strptime("2024-02-01 01:00:00", "%Y-%m-%d %H:%M:%S")
     last_lot_time = time_range_start
@@ -111,7 +111,7 @@ def generate_complete_lots(chamber):
                 _mc1, _mc2, _mc3, _mc4, _mc5, _mc6, _mc7, _mc8 = generate_mc_values(chamber, amc)
 
                 LotData.objects.create(
-                    lot_id=lot,
+                    lot=lot,
                     time=current_time,
                     command_name=command_name,
                     dbt1=dbt1,
@@ -334,7 +334,7 @@ def generate_ongoing_lots(i): # for odd chambers only
             _mc1, _mc2, _mc3, _mc4, _mc5, _mc6, _mc7, _mc8 = generate_mc_values(i, amc)
 
             LotData.objects.create(
-                lot_id=lot,
+                lot=lot,
                 time=current_time,
                 command_name=command_name,
                 dbt1=dbt1,
@@ -365,7 +365,7 @@ def generate_ongoing_lots(i): # for odd chambers only
                 chamber = i,
                 time = current_time + timedelta(minutes=30),
                 status_code = 0,
-                lot_id = lot.id,
+                lot = lot,
                 details =''                
             )
 
@@ -385,7 +385,7 @@ def generate_idle_status(i):
     StatusReport.objects.create(
         company = Company.objects.get(id=1),
         chamber = i,
-        time = timezone.make_aware(datetime(2023, 8, 2, 1, 0, 0), timezone.get_default_timezone()),
+        time = datetime(2023, 8, 2, 1, 0, 0),
         status_code = 1,
         lot_id = None,
         details =''                

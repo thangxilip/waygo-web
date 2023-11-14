@@ -38,8 +38,10 @@ export const Endpoints = {
   auth: "/auth/login/",
   refresh: "/auth/refresh-token/",
   statusReport: "/status-report/chamber-latest-status/",
-  ongoingLots: "/lots/ongoing-lot/",
-  historicalLots: "/lots/historical-lot/",
   lots: "lots/",
   statistics: "/statistic/",
+  exportLotExcel: "lots/lot-excel",
+  exportLotDataExcel: (lotId) => `lots/${lotId}/lot-data-excel`,
+  exportStatusReportExcel: "/status-report/excel",
+  notifications: "/notifications/"
 };

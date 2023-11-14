@@ -9,6 +9,7 @@ main_router = DefaultRouter()
 main_router.register(r'lots', views.LotViewSet, 'lots')
 main_router.register(r'lots-data', views.LotDataViewSet, 'lots-data')
 main_router.register(r'status-report', views.StatusReportViewSet, 'status-report')
+main_router.register(r'notifications', views.NotificationViewSet, 'notifications')
 urlpatterns = [
     path('', include(main_router.urls)),
     path('statistic/', views.statistic),

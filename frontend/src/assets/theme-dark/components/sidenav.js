@@ -38,6 +38,7 @@ const sidenav = {
       margin: `${pxToRem(16)} 0 ${pxToRem(16)} ${pxToRem(16)}`,
       borderRadius: borderRadius.xl,
       border: "none",
+      // padding: 24
     },
 
     paperAnchorDockedLeft: {

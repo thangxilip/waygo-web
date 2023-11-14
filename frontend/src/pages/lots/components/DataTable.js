@@ -5,224 +5,266 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import { useNavigate } from "react-router-dom";
 import Table from "./Table";
 import dayjs from "dayjs";
+import Checkbox from "@mui/material/Checkbox";
+import { useTranslation } from "react-i18next";
+import Tooltip from "@mui/material/Tooltip";
+import { GridFilterInputValue } from "@mui/x-data-grid";
 
 export const LotsDataTable = ({ lotID }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const numberFilterOperators = [
+    {
+      label: t("greaterThanEquals"),
+      value: "__gte",
+      InputComponent: GridFilterInputValue,
+    },
+  ];
 
   const columns = [
     {
+      field: "id",
+      headerName: t("id"),
+      sortable: false,
+      width: 100,
+      filterable: false,
+    },
+    {
+      field: "time",
+      headerName: t("time"),
+      sortable: false,
+      width: 200,
+      filterable: false,
+      renderCell: ({ row }) => dayjs(row?.time).format("YYYY/MM/DD, HH:mm"),
+    },
+
+    {
+      field: "command_name",
+      headerName: t("command"),
+      width: 160,
+      sortable: false,
+      filterable: false,
+      renderCell: ({ row }) => {
+        return (
+          row.command_name && (
+            <Tooltip arrow={false} title={row.command_name} placement="right">
+              <div>{row.command_name}</div>
+            </Tooltip>
+          )
+        );
+      },
+    },
+    {
       field: "amc",
-      headerName: "Amc",
+      headerName: t("amc"),
       width: 110,
       sortable: false,
       filterable: false,
     },
     {
-      field: "command_name",
-      headerName: "Command",
-      // flex: 1,
-      width: 130,
+      field: "rh",
+      headerName: t("rh"),
       sortable: false,
+      width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "dbt1",
-      headerName: "dbt1",
-      // flex: 1,
-      width: 80,
+      headerName: t("dbt1"),
+      width: 90,
       sortable: false,
-      filterable: false,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
     },
     {
       field: "dbt2",
-      headerName: "dbt2",
-      type: "number",
-      // flex: 1,
-      width: 80,
-      sortable: false,
-      filterable: false,
-    },
-    {
-      field: "details",
-      headerName: "details",
-      sortable: false,
-      // flex: 1,
-      width: 100,
-      filterable: false,
-    },
-    {
-      field: "fan_ccw",
-      headerName: "fan_ccw",
-      sortable: false,
-      // flex: 1,
+      headerName: t("dbt2"),
       width: 90,
+      sortable: false,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
+    },
+    {
+      field: "targetdbt",
+      headerName: t("targetdbt"),
+      width: 120,
+      sortable: false,
       filterable: false,
     },
     {
-      field: "fan_cw",
-      headerName: "fan_cw",
+      field: "wbt1",
+      headerName: t("wbt1"),
       sortable: false,
-      // flex: 1,
       width: 90,
-      filterable: false,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
     },
     {
-      field: "flaps",
-      headerName: "flaps",
+      field: "wbt2",
+      headerName: t("wbt2"),
       sortable: false,
-      // flex: 1,
-      width: 80,
-      filterable: false,
+      width: 90,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
     },
     {
-      field: "heat",
-      headerName: "heat",
+      field: "targetwbt",
+      headerName: t("targetwbt"),
+      width: 120,
       sortable: false,
-      // flex: 1,
-      width: 80,
-      filterable: false,
-    },
-    {
-      field: "id",
-      headerName: "id",
-      sortable: false,
-      // flex: 1,
-      width: 100,
       filterable: false,
     },
     {
       field: "mc1",
-      headerName: "mc1",
+      headerName: t("mc1"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
     },
     {
       field: "mc2",
-      headerName: "mc2",
+      headerName: t("mc2"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
     },
     {
       field: "mc3",
-      headerName: "mc3",
+      headerName: t("mc3"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
     },
     {
       field: "mc4",
-      headerName: "mc4",
+      headerName: t("mc4"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
     },
     {
       field: "mc5",
-      headerName: "mc5",
+      headerName: t("mc5"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "mc6",
-      headerName: "mc6",
+      headerName: t("mc6"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "mc7",
-      headerName: "mc7",
+      headerName: t("mc7"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
+      optional: true,
     },
     {
       field: "mc8",
-      headerName: "mc8",
+      headerName: t("mc8"),
       sortable: false,
-      // flex: 1,
       width: 80,
       filterable: false,
-    },
-    {
-      field: "reserved",
-      headerName: "reserved",
-      sortable: false,
-      // flex: 1,
-      width: 100,
-      filterable: false,
-    },
-    {
-      field: "rh",
-      headerName: "rh",
-      sortable: false,
-      // flex: 1,
-      width: 80,
-      filterable: false,
-    },
-    {
-      field: "spray",
-      headerName: "spray",
-      sortable: false,
-      // flex: 1,
-      width: 80,
-      filterable: false,
-    },
-    {
-      field: "time",
-      headerName: "time",
-      sortable: false,
-      // flex: 1,
-      width: 200,
-      filterable: false,
-      renderCell: ({ row }) => dayjs(row?.time).format("YYYY-MM-DD HH:mm a"),
-    },
-    {
-      field: "wbt1",
-      headerName: "wbt1",
-      sortable: false,
-      // flex: 1,
-      width: 80,
-      filterable: false,
-    },
-    {
-      field: "wbt2",
-      headerName: "wbt2",
-      sortable: false,
-      // flex: 1,
-      width: 80,
-      filterable: false,
+      optional: true,
     },
     {
       field: "wood_temp1",
-      headerName: "wood_temp1",
+      headerName: t("woodTemp1"),
       sortable: false,
-      // flex: 1,
-      width: 120,
-      filterable: false,
+      width: 140,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
     },
     {
       field: "wood_temp2",
-      headerName: "wood_temp2",
+      headerName: t("woodTemp2"),
       sortable: false,
-      // flex: 1,
-      width: 120,
-      filterable: false,
+      width: 140,
+      type: "string",
+      filterable: true,
+      filterOperators: numberFilterOperators,
+      optional: true,
     },
+
+    {
+      field: "flaps",
+      headerName: t("flaps"),
+      sortable: false,
+      width: 90,
+      filterable: false,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.flaps === 1} />,
+    },
+    {
+      field: "heat",
+      headerName: t("heat"),
+      sortable: false,
+      width: 90,
+      filterable: false,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.heat === 1} />,
+    },
+    {
+      field: "spray",
+      headerName: t("spray"),
+      sortable: false,
+      width: 90,
+      filterable: false,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.spray === 1} />,
+    },
+    {
+      field: "fan_cw",
+      headerName: t("fanCW"),
+      sortable: false,
+      width: 90,
+      filterable: false,
+      renderCell: ({ row }) => <Checkbox readOnly checked={row.fan_cw === 1} />,
+    },
+    {
+      field: "fan_ccw",
+      headerName: t("fanCCW"),
+      sortable: false,
+      width: 90,
+      filterable: false,
+      renderCell: ({ row }) => (
+        <Checkbox readOnly checked={row.fan_ccw === 1} />
+      ),
+    },
+    // {
+    //   field: "details",
+    //   headerName: t("details"),
+    //   sortable: false,
+    //   // flex: 1,
+    //   width: 150,
+    //   filterable: false,
+    // },
+    // {
+    //   field: "reserved",
+    //   headerName: t("reserved"),
+    //   sortable: false,
+    //   // flex: 1,
+    //   width: 150,
+    //   filterable: false,
+    // },
   ];
 
   return (
-    <ArgonBox sx={{ height: "100vh", width: "100%" }} mt={8}>
+    <ArgonBox sx={{ width: "100%" }}>
       <ArgonBox mb={2} display="flex" justifyContent="space-between">
         <ArgonButton
           onClick={() => {
@@ -230,10 +272,16 @@ export const LotsDataTable = ({ lotID }) => {
           }}
         >
           <ArrowBackIosIcon sx={{ fill: "#000" }} />
-          Back
+          {t("back")}
         </ArgonButton>
       </ArgonBox>
-      <Table columns={columns} url={`${Endpoints.lots}${lotID}/lot-data/`} />
+      <Table
+        type="lot_data"
+        lotID={lotID}
+        columns={columns}
+        url={`${Endpoints.lots}${lotID}/lot-data/`}
+        pageSize={50}
+      />
     </ArgonBox>
   );
 };

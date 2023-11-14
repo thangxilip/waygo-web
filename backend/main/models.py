@@ -1,6 +1,8 @@
+import math
 from django.db import models
-from django.contrib.auth.models import User
-
+from django.contrib.auth.models import PermissionsMixin
+from rest_framework_api_key.models import AbstractAPIKey
+from django.contrib.auth.models import AbstractUser
 
 class Company(models.Model):
     name = models.CharField(max_length=100)
@@ -15,6 +17,17 @@ class Company(models.Model):
         return f"{self.id}. {self.name}"
 
 
+class CompanyAPIKey(AbstractAPIKey):
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="api_keys",
+    )
+
+    class Meta(AbstractAPIKey.Meta):
+        verbose_name = "Company API key"
+        verbose_name_plural = "Company API keys"
+
 class StatusReport(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     chamber = models.PositiveSmallIntegerField()
@@ -22,35 +35,40 @@ class StatusReport(models.Model):
     server_time = models.DateTimeField(
         auto_now_add=True
     )  # auto created when record is added
-    status_code = models.IntegerField()  # 0 = operating; >0 = idle
-    details = models.CharField(max_length=255)  # reserved
-    lot_id = models.CharField(
-        max_length=100, null=True
-    )  # only has value when status_code = 1
+    # 0 = Idle; 1 = Operating; -1 = Issue: Modbus TCP; -2 = Issue: Sensor Unit; -3 = Halted: Cabinet Auto SW; -4 = Issue: Equipment Overload; <=-5 = Issue: Others
+    status_code = models.IntegerField()  
+    lot = models.ForeignKey("Lot", on_delete=models.SET_NULL, null=True) # only has value when status_code = 1
     details = models.CharField(max_length=100, null=True)
+
+    def __str__(self):
+        formatted_server_time = self.server_time.strftime("%Y-%m-%d %H:%M")
+        return (
+            f"{self.id} - Chamber: {self.chamber} - Time: {formatted_server_time}"
+        )
 
 
 """
-To developer: the following AppUser may be deleted, you may need to implement
-a user model that is associated with a company and will be used for authentication
 Note that in production I want to be able to create new users and companies 
 in Django admin
 """
 
+class User(AbstractUser, PermissionsMixin):
+    company = models.ForeignKey(Company, blank=True, null=True, on_delete=models.CASCADE)
 
-class AppUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    fullname = models.CharField(max_length=100)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.company.name}"
+    def get_full_name(self):
+        '''
+        Returns the first_name plus the last_name, with a space in between.
+        '''
+        full_name = '%s %s' % (self.first_name, self.last_name)
+        return full_name.strip()
+    
+    class Meta:
+        db_table = 'auth_user'
 
 
 """
 This is the model describing a timber drying lot. In production these new records will be created POST
 """
-
 
 class Lot(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
@@ -89,28 +107,28 @@ class Lot(models.Model):
 In production these LotData records will be created once an hour via POST
 """
 
-
 class LotData(models.Model):
-    lot_id = models.ForeignKey(Lot, on_delete=models.CASCADE)
+    lot = models.ForeignKey(Lot, on_delete=models.CASCADE, related_name="lot_data")
     time = models.DateTimeField()
     command_name = models.CharField(max_length=100)
-    wbt1 = models.DecimalField(max_digits=6, decimal_places=2)
-    wbt2 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    dbt1 = models.DecimalField(max_digits=6, decimal_places=2)
-    dbt2 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    rh = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-
-    mc1 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc2 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc3 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc4 = models.DecimalField(max_digits=6, decimal_places=2)
-    mc5 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    mc6 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    mc7 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    mc8 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    amc = models.DecimalField(max_digits=6, decimal_places=2)
-    wood_temp1 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    wood_temp2 = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    wbt1 = models.FloatField()
+    wbt2 = models.FloatField(null=True)
+    dbt1 = models.FloatField()
+    dbt2 = models.FloatField(null=True)
+    rh = models.FloatField(null=True)
+    targetdbt = models.FloatField(null=True)
+    targetwbt = models.FloatField(null=True)
+    mc1 = models.FloatField()
+    mc2 = models.FloatField()
+    mc3 = models.FloatField()
+    mc4 = models.FloatField()
+    mc5 = models.FloatField(null=True)
+    mc6 = models.FloatField(null=True)
+    mc7 = models.FloatField(null=True)
+    mc8 = models.FloatField(null=True)
+    amc = models.FloatField()
+    wood_temp1 = models.FloatField(null=True)
+    wood_temp2 = models.FloatField(null=True)
     flaps = models.PositiveSmallIntegerField(
         null=True
     )  # 0 = 'ON'; 1 = 'OFF'. Displayed as 'ON' or 'OFF' in plots
@@ -129,6 +147,42 @@ class LotData(models.Model):
     reserved = models.FloatField(null=True)  # reserved field
     details = models.CharField(max_length=100, null=True)  # reserved field
 
+    def save(self, *args, **kwargs):
+        if self.dbt2 is not None and self.dbt2 > self.dbt1:
+            Td = self.dbt2
+            Tw = self.wbt2
+        else:
+            Td = self.dbt1
+            Tw = self.wbt1
+
+        self.rh = self.calculateRH(Td, Tw)
+        super().save(*args, **kwargs)
+
+    def calculateRH(self, Td, Tw):
+        # formula: http://www.1728.org/relhum.htm
+        try:
+            powerEd = (17.502 * Td) / (240.97 + Td)
+            Ed = 6.112 * math.exp(powerEd)
+            powerEw = (17.502 * Tw) / (240.97 + Tw)
+            Ew = 6.112 * math.exp(powerEw)
+            N = 0.66875
+            RH = (Ew - N * (1 + 0.00115 * Tw) * (Td - Tw)) / Ed * 100.0
+            RH = float(round(RH, 2))
+            return RH
+        except Exception as e:
+            return -1
+
     def __str__(self):
         formatted_time = self.time.strftime("%Y-%m-%d %H:%M")
         return f"{self.lot_id}. {self.time}"
+
+
+class Notification(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    from_chamber = models.CharField(max_length=10, null=True)
+    time = models.DateTimeField(null=True)
+    type = models.CharField(max_length=100, null=True)
+    details = models.CharField(max_length=1000, null=True)
+
+    def __str__(self):
+        return f"{self.id}"

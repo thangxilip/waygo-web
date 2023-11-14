@@ -1,0 +1,8 @@
+class ReportStatusCode:
+    IDLE = 0
+    OPERATING = 1
+    ISSUE_MODBUS_TCP = -1
+    ISSUE_SENSOR_UNIT = -2
+    HALTED_CABINET_AUTO_SW = -3
+    ISSUE_EQUIPMENT_OVERLOAD = -4
+    ISSUE_OTHERS = -5

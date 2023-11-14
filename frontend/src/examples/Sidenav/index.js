@@ -25,51 +25,42 @@ import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 //mui icon
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
-import HistoryIcon from "@mui/icons-material/History";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import ComputerIcon from "@mui/icons-material/Computer";
-import HelpCenterIcon from "@mui/icons-material/HelpCenter";
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import { useTranslation } from "react-i18next";
 
 // Argon Dashboard 2 MUI context
 import { useArgonController, setMiniSidenav } from "context";
 
-const routes = [
-  {
-    title: "Status Reports",
-    icon: <SummarizeIcon />,
-    path: "/",
-  },
-  {
-    title: "Ongoing Lots",
-    icon: <PrecisionManufacturingIcon />,
-    path: "/ongoing-lots",
-  },
-  {
-    title: "Historical Lots",
-    icon: <HistoryIcon />,
-    path: "/historical-lots",
-  },
-  {
-    title: "Statistics",
-    icon: <AssessmentIcon />,
-    path: "/statistics",
-  },
-  {
-    title: "Technology",
-    icon: <ComputerIcon />,
-    path: "/technology",
-  },
-  {
-    title: "Help",
-    icon: <HelpCenterIcon />,
-    path: "/help",
-  },
-];
 function Sidenav({ color, brand, brandName, ...rest }) {
   const [controller, dispatch] = useArgonController();
   const { miniSidenav, darkSidenav, layout } = controller;
   const location = useLocation();
   const { pathname } = location;
+  const { t } = useTranslation();
+
+  const routes = [
+    {
+      title: t("statusReport"),
+      icon: <SummarizeIcon />,
+      path: "/",
+    },
+    {
+      title: t("lots"),
+      icon: <PrecisionManufacturingIcon />,
+      path: "/lots",
+    },
+    {
+      title: t("statistics"),
+      icon: <AssessmentIcon />,
+      path: "/statistics",
+    },
+    {
+      title: t("notifications"),
+      icon: <NotificationsIcon />,
+      path: "/notifications",
+    },
+  ];
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
 
@@ -127,14 +118,13 @@ function Sidenav({ color, brand, brandName, ...rest }) {
             <Icon sx={{ fontWeight: "bold" }}>close</Icon>
           </ArgonTypography>
         </ArgonBox>
-        <ArgonBox component={NavLink} to="/" display="flex" alignItems="center">
+        <ArgonBox component={NavLink} to="/" display="flex" alignItems="center" justifyContent="center">
           {brand && (
             <ArgonBox
               component="img"
               src={brand}
               alt="Argon Logo"
-              width="10rem"
-              mr={0.25}
+              width={miniSidenav ? '52px' : '100%'}
             />
           )}
           <ArgonBox

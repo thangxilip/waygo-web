@@ -10,9 +10,11 @@ import Icon from "@mui/material/Icon";
 // Argon Dashboard 2 MUI components
 import ArgonBox from "components/ArgonBox";
 import ArgonTypography from "components/ArgonTypography";
+import { useTranslation } from "react-i18next";
 
 function Breadcrumbs({ icon, title, route, light }) {
   const routes = route.slice(0, -1);
+  const { t } = useTranslation();
 
   return (
     <ArgonBox mr={{ xs: 0, xl: 8 }}>
@@ -21,13 +23,15 @@ function Breadcrumbs({ icon, title, route, light }) {
           "& .MuiBreadcrumbs-separator": {
             color: ({ palette: { white, grey } }) =>
               light ? white.main : grey[600],
+            opacity: 0.8,
           },
         }}
+        separator="›"
       >
         <Link to="/">
           <ArgonTypography
             component="span"
-            variant="body2"
+            variant="body1"
             color={light ? "white" : "black"}
             opacity={light ? 0.8 : 0.5}
             sx={{ lineHeight: 0 }}
@@ -35,6 +39,7 @@ function Breadcrumbs({ icon, title, route, light }) {
             <Icon>{icon}</Icon>
           </ArgonTypography>
         </Link>
+
         {routes.map((el) => (
           <Link to={`/${el}`} key={el}>
             <ArgonTypography
@@ -46,17 +51,19 @@ function Breadcrumbs({ icon, title, route, light }) {
               opacity={light ? 0.8 : 0.5}
               sx={{ lineHeight: 0 }}
             >
-              {el}
+              {t(el)}
             </ArgonTypography>
           </Link>
         ))}
         <ArgonTypography
+          component="span"
           variant="button"
           textTransform="capitalize"
           color={light ? "white" : "black"}
+          opacity={light ? 0.9 : 0.5}
           sx={{ lineHeight: 0 }}
         >
-          {title ? title.replace("-", " ") : "Status Reports"}
+          {title ? t(title.replace("-", " ")) : t("statusReport")}
         </ArgonTypography>
       </MuiBreadcrumbs>
     </ArgonBox>

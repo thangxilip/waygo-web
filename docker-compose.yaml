@@ -1,0 +1,62 @@
+version: '3'
+services:
+  db:
+    image: mysql:latest
+    container_name: db
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=timberscada
+      - MYSQL_PASSWORD=QpnhI8xgeDwNrKL1JYNemy
+      - MYSQL_ROOT_PASSWORD=QpnhI8xgeDwNrKL1JYNemy
+      - MYSQL_DATABASE_PORT=3306
+    volumes:
+      - /tmp/app/mysqld:/var/run/mysqld
+      - mysql_data:/var/lib/msql
+    networks:
+      - db_network
+    restart: always
+    ports:
+      - '3306:3306'
+
+  rest:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rest
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/code
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+    networks:
+      - db_network
+    ports:
+      - "8000:8000"
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    volumes:
+      - ./frontend:/app
+    env_file:
+      - ./frontend/.env
+    restart: always
+    networks:
+      - db_network
+    depends_on:
+      - rest
+    ports:
+      - "80:3000"
+
+networks:
+  db_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+

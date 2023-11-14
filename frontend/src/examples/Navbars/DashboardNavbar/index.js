@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 
 // react-router components
@@ -20,8 +21,6 @@ import ArgonTypography from "components/ArgonTypography";
 // Argon Dashboard 2 MUI example components
 import Breadcrumbs from "examples/Breadcrumbs";
 
-import PublicIcon from "@mui/icons-material/Public";
-
 // Custom styles for DashboardNavbar
 import {
   navbar,
@@ -38,25 +37,37 @@ import {
 } from "context";
 
 // Images
-import DarkModeSwitcher from "components/DarkModeSwitcher";
-import { MenuItem, Stack, useMediaQuery } from "@mui/material";
+import { MenuItem, Typography, useMediaQuery } from "@mui/material";
 import { setDarkSidenav } from "context";
 import { setDarkMode } from "context";
 import { getUser } from "utils/helper";
-import LogoutIcon from "@mui/icons-material/Logout";
 import { removeAuthToken } from "utils/helper";
+import Avatar from "@mui/material/Avatar";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Divider from "@mui/material/Divider";
+import Logout from "@mui/icons-material/Logout";
+import Box from "@mui/material/Box";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { useTranslation } from "react-i18next";
+import enLang from "assets/images/en-lang.svg";
+import viLang from "assets/images/vi-lang.svg";
+import { saveDarkModeToStorage } from "utils/helper";
 
 function DashboardNavbar({ absolute, light, isMini }) {
-  const [navbarType, setNavbarType] = useState();
+  const [navbarType, setNavbarType] = useState("static");
   const [anchorEl, setAnchorEl] = useState(null);
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const openProfile = Boolean(profileAnchorEl);
   const [controller, dispatch] = useArgonController();
-  const { user, company } = getUser();
+  const user = getUser();
   const isMobile = useMediaQuery("(max-width:475px)");
 
   const { miniSidenav, transparentNavbar, fixedNavbar, darkMode } = controller;
   const route = useLocation().pathname.split("/").slice(1);
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     // Setting the navbar type
@@ -92,13 +103,22 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const handleDarkMode = () => {
     setDarkSidenav(dispatch, !darkMode);
     setDarkMode(dispatch, !darkMode);
+    saveDarkModeToStorage(!darkMode);
   };
   const handleGlobal = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
+  const handleProfile = (event) => {
+    setProfileAnchorEl(event.currentTarget);
+  };
+
   const handleClose = () => {
-    setAnchorEl(!anchorEl);
+    setAnchorEl(null);
+  };
+
+  const handleCloseProfile = () => {
+    setProfileAnchorEl(null);
   };
 
   const handleLogout = () => {
@@ -128,7 +148,12 @@ function DashboardNavbar({ absolute, light, isMini }) {
           alignItems: "center",
         }}
       >
-        <ArgonBox display="flex" flexDirection="row-reverse">
+        <ArgonBox
+          sx={{
+            display: "flex",
+            flexDirection: "row-reverse",
+          }}
+        >
           {!isMobile ? (
             <Breadcrumbs
               icon="home"
@@ -137,37 +162,35 @@ function DashboardNavbar({ absolute, light, isMini }) {
               light={transparentNavbar ? light : false}
             />
           ) : null}
-          <Icon
-            fontSize="medium"
-            sx={
-              (navbarDesktopMenu,
-              { color: !darkMode ? "black" : "lightgray", marginRight: "1rem" })
-            }
-            onClick={handleMiniSidenav}
-          >
-            {!miniSidenav ? "menu_open" : "menu"}
-          </Icon>
+          <ArgonTypography color="white">
+            <Icon
+              fontSize="medium"
+              sx={
+                (navbarDesktopMenu,
+                {
+                  marginRight: "1rem",
+                  opacity: `${light ? 0.8 : 0.5}`,
+                  cursor: "pointer",
+                })
+              }
+              onClick={handleMiniSidenav}
+            >
+              {!miniSidenav ? "menu_open" : "menu"}
+            </Icon>
+          </ArgonTypography>
         </ArgonBox>
         <Toolbar sx={(theme) => navbarContainer(theme, { navbarType })}>
           {isMini ? null : (
             <ArgonBox sx={(theme) => navbarRow(theme, { isMini })}>
-              <ArgonTypography
-                variant="button"
-                fontWeight="medium"
-                // color={darkMode && transparentNavbar ? "dark" : "white"}
-                color={transparentNavbar ? "white" : "black"}
-                fontSize={isMobile ? "1rem" : "1.3rem"}
-              >
-                {user?.username}
-              </ArgonTypography>
-              <ArgonTypography
-                variant="button"
-                fontWeight="medium"
-                color={transparentNavbar ? "white" : "black"}
-                fontSize={isMobile ? "1rem" : "1.3rem"}
-              >
-                {company?.name}
-              </ArgonTypography>
+              {user?.company?.name && (
+                <ArgonTypography
+                  variant="button"
+                  fontWeight="medium"
+                  color={transparentNavbar ? "white" : "black"}
+                >
+                  Welcome, {user?.company?.name}
+                </ArgonTypography>
+              )}
               <ArgonTypography
                 variant="button"
                 fontWeight="medium"
@@ -180,13 +203,10 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   aria-expanded={open ? "true" : undefined}
                   onClick={handleGlobal}
                 >
-                  <PublicIcon
-                    fontSize="medium"
-                    color={transparentNavbar ? "white" : "black"}
-                    sx={{
-                      fill: transparentNavbar ? "#fff" : "#344767",
-                      cursor: "pointer",
-                    }}
+                  <img
+                    src={i18n.language === "en" ? enLang : viLang}
+                    alt="print"
+                    width="25px"
                   />
                 </IconButton>
                 <Menu
@@ -194,54 +214,142 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   anchorEl={anchorEl}
                   open={open}
                   onClose={handleClose}
+                  onClick={handleClose}
                   MenuListProps={{
                     "aria-labelledby": "basic-button",
                   }}
-                  sx={{
-                    width: "6rem",
-                    "& . hover": {
-                      width: "6rem",
+                  PaperProps={{
+                    elevation: 0,
+                    sx: {
+                      overflow: "visible",
+                      filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                      mt: 1.5,
+                      "&:before": {
+                        content: '""',
+                        display: "block",
+                        position: "absolute",
+                        top: 0,
+                        right: 14,
+                        width: 10,
+                        height: 10,
+                        bgcolor: "background.paper",
+                        transform: "translateY(-50%) rotate(45deg)",
+                        zIndex: 0,
+                      },
                     },
                   }}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                 >
-                  <MenuItem onClick={handleClose} sx={{ minWidth: 0 }}>
-                    EN
+                  <MenuItem
+                    onClick={() => i18n.changeLanguage("en")}
+                    sx={{ minWidth: 0 }}
+                  >
+                    <img src={enLang} alt="print" width="18px" />
+                    <Typography sx={{ ml: 1, fontSize: 14 }} variant="body2">
+                      English
+                    </Typography>
                   </MenuItem>
-                  <MenuItem onClick={handleClose} sx={{ minWidth: 0 }}>
-                    VI
+                  <MenuItem
+                    onClick={() => i18n.changeLanguage("vi")}
+                    sx={{ minWidth: 0 }}
+                  >
+                    <img src={viLang} alt="print" width="18px" />
+                    <Typography sx={{ ml: 1, fontSize: 14 }} variant="body2">
+                      Tiếng Việt
+                    </Typography>
                   </MenuItem>
                 </Menu>
               </ArgonTypography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <DarkModeSwitcher
-                  checked={darkMode}
-                  onChange={handleDarkMode}
-                />
-                <ArgonTypography
-                  variant="button"
-                  fontWeight="medium"
-                  color={transparentNavbar ? "white" : "black"}
-                  fontSize={isMobile ? "0.8rem" : "1rem"}
-                >
-                  Dark Mode
-                </ArgonTypography>
+              <ArgonTypography
+                variant="button"
+                fontWeight="medium"
+                color={transparentNavbar ? "white" : "black"}
+              >
                 <IconButton
-                  id="basic-button"
-                  aria-controls={open ? "basic-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
-                  onClick={handleLogout}
+                  focusRipple
+                  onClick={handleDarkMode}
+                  color={transparentNavbar ? "white" : "black"}
                 >
-                  <LogoutIcon
-                    fontSize="medium"
-                    color={transparentNavbar ? "white" : "black"}
-                    sx={{
-                      fill: transparentNavbar ? "#fff" : "#344767",
-                      cursor: "pointer",
-                    }}
-                  />
+                  {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
                 </IconButton>
-              </Stack>
+              </ArgonTypography>
+
+              <ArgonTypography
+                variant="button"
+                fontWeight="medium"
+                color={transparentNavbar ? "white" : "black"}
+              >
+                <IconButton
+                  id="account-button"
+                  aria-controls={openProfile ? "account-menu" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={openProfile ? "true" : undefined}
+                  onClick={handleProfile}
+                >
+                  <Avatar sx={{ width: 28, height: 28 }} />
+                </IconButton>
+                <Menu
+                  anchorEl={profileAnchorEl}
+                  id="account-menu"
+                  open={openProfile}
+                  onClose={handleCloseProfile}
+                  onClick={handleCloseProfile}
+                  PaperProps={{
+                    elevation: 0,
+                    sx: {
+                      overflow: "visible",
+                      filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                      mt: 1.5,
+                      "& .MuiAvatar-root": {
+                        width: 32,
+                        height: 32,
+                        ml: -0.5,
+                        mr: 1,
+                      },
+                      "&:before": {
+                        content: '""',
+                        display: "block",
+                        position: "absolute",
+                        top: 0,
+                        right: 14,
+                        width: 10,
+                        height: 10,
+                        bgcolor: "background.paper",
+                        transform: "translateY(-50%) rotate(45deg)",
+                        zIndex: 0,
+                      },
+                    },
+                  }}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      pl: 2,
+                      pr: 2,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Avatar />
+                    <Box sx={{ ml: 1 }}>
+                      <Typography variant="body2">{user?.username}</Typography>
+                      <Typography variant="body2" sx={{ fontSize: 12 }}>
+                        {user?.company?.name}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Divider />
+                  <MenuItem onClick={handleLogout}>
+                    <ListItemIcon>
+                      <Logout fontSize="small" />
+                    </ListItemIcon>
+                    {t("logout")}
+                  </MenuItem>
+                </Menu>
+              </ArgonTypography>
             </ArgonBox>
           )}
         </Toolbar>

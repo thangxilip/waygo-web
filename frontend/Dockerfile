@@ -1,5 +1,5 @@
 # Base image
-FROM node:18 as build
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
@@ -8,27 +8,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install -g npm
+# RUN npm install -g npm
 RUN npm install
 
 # Copy the rest of the application files
 COPY . .
 
-# Build the application
-RUN npm run build
+# Expose the port used by the development server
+EXPOSE 3000
 
-# Production image
-FROM nginx:latest
-
-# Copy the built files to Nginx's web root directory
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy the Nginx configuration file
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80
-EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
-    
+# Start the development server
+CMD ["npm", "run", "start"]

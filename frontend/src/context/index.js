@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useMemo } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
+import { getDarkModeFromStorage } from "utils/helper";
 
 // The Argon Dashboard 2 MUI main context
 const Argon = createContext(null);
@@ -47,16 +48,17 @@ function reducer(state, action) {
 
 // Argon Dashboard 2 MUI context provider
 function ArgonControllerProvider({ children }) {
+  const darkMode = getDarkModeFromStorage();
   const initialState = {
     miniSidenav: false,
-    darkSidenav: false,
+    darkSidenav: darkMode,
     sidenavColor: null,
     transparentNavbar: true,
-    fixedNavbar: true,
+    fixedNavbar: false,
     openConfigurator: false,
     direction: "ltr",
     layout: "dashboard",
-    darkMode: false,
+    darkMode: darkMode,
   };
 
   const [controller, dispatch] = useReducer(reducer, initialState);

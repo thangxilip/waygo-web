@@ -1,117 +1,147 @@
 import ArgonBox from "components/ArgonBox";
-import ArgonButton from "components/ArgonButton";
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Endpoints } from "utils/httpServices";
 import { LotsDataTable } from "./components/DataTable";
 import { LotsDataPlot } from "./components/DataPlot";
 import Table from "./components/Table";
+import { Button } from "@mui/material";
+import TableViewIcon from "@mui/icons-material/TableView";
+import BubbleChartIcon from "@mui/icons-material/BubbleChart";
+import dayjs from "dayjs";
+import { secondsToDuration } from "utils/helper";
+import { useTranslation } from "react-i18next";
+import Tooltip from "@mui/material/Tooltip";
 
 export const Lots = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id, view } = useParams();
+  const { t } = useTranslation();
 
   const name = location.pathname.split("/").slice(1);
 
   const columns = [
     {
+      field: "actions",
+      type: "actions",
+      sortable: false,
+      width: 240,
+      renderCell: ({ row }) => (
+        <ArgonBox gap="5px" sx={{ width: "100%", display: "flex" }}>
+          <Button
+            startIcon={<TableViewIcon />}
+            onClick={() => {
+              navigate(`/${name[0]}/data/${row?.id}`);
+            }}
+          >
+            {t("dataTable")}
+          </Button>
+          <Button
+            startIcon={<BubbleChartIcon />}
+            onClick={() => {
+              navigate(`/${name[0]}/plot/${row?.id}`);
+            }}
+          >
+            {t("dataPlot")}
+          </Button>
+        </ArgonBox>
+      ),
+    },
+    {
       field: "chamber",
-      headerName: "Chamber",
+      headerName: t("chamber"),
       width: 140,
       type: "string",
       sortable: false,
     },
     {
       field: "id",
-      headerName: "Lot ID",
-      // flex: 1,
+      headerName: t("lotId"),
       width: 155,
       sortable: false,
       filterable: false,
+      renderCell: ({ row }) => {
+        return row.id && (
+          <Tooltip arrow={false} title={row.id} placement="right">
+            <div>{row.id}</div>
+          </Tooltip>
+        );
+      },
     },
-    {
-      field: "start_time",
-      headerName: "Start Time",
-      // flex: 1,
-      width: 150,
-      sortable: false,
-      type: "date",
-      valueGetter: (params) => new Date(params.row.start_time),
-    },
+
     {
       field: "program_name",
-      headerName: "Program",
-      // flex: 1,
+      headerName: t("program"),
       width: 210,
       sortable: false,
       filterable: false,
+      renderCell: ({ row }) => {
+        return row.program_name && (
+          <Tooltip arrow={false} title={row.program_name} placement="right">
+            <div>{row.program_name}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "total_commands",
-      headerName: "Commands",
+      headerName: t("commands"),
       sortable: false,
-      // flex: 1,
       width: 110,
       filterable: false,
     },
     {
       field: "species",
-      headerName: "Species",
+      headerName: t("species"),
       sortable: false,
-      // flex: 1,
       width: 135,
       type: "string",
+      renderCell: ({ row }) => {
+        return row.species && (
+          <Tooltip arrow={false} title={row.species} placement="right">
+            <div>{row.species}</div>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "quantity",
-      headerName: "Quantity",
+      headerName: t("quantity"),
       sortable: false,
-      // flex: 1,
-      width: 110,
-      filterable: false,
-    },
-    {
-      field: "duration",
-      headerName: "Ellapsed",
-      sortable: false,
-      // flex: 1,
       width: 140,
       filterable: false,
     },
     {
-      field: "complete_time",
-      headerName: "Complete Time",
-      sortable: false,
-      // flex: 1,
+      field: "start_time",
+      headerName: t("startTime"),
       width: 170,
+      sortable: false,
+      type: "date",
+      valueGetter: (params) => new Date(params.row.start_time),
+      renderCell: ({ row }) =>
+        dayjs(row.start_time).format("DD/MM/YYYY, HH:mm"),
+    },
+    {
+      field: "complete_time",
+      headerName: t("completeTime"),
+      sortable: false,
+      width: 190,
       type: "date",
       valueGetter: (params) =>
         params.row.complete_time && new Date(params.row.complete_time),
+      renderCell: ({ row }) =>
+        row.complete_time &&
+        dayjs(row.complete_time).format("DD/MM/YYYY, HH:mm"),
     },
     {
-      field: "actions",
-      type: "actions",
+      field: "duration",
+      headerName: t("ellapsed"),
       sortable: false,
-      width: 270,
-      renderCell: ({ row }) => (
-        <ArgonBox gap="10px" sx={{ width: "100%", display: "flex" }}>
-          <ArgonButton
-            onClick={() => {
-              navigate(`/${name[0]}/data/${row?.id}`);
-            }}
-          >
-            Data table
-          </ArgonButton>
-          <ArgonButton
-            onClick={() => {
-              navigate(`/${name[0]}/plot/${row?.id}`);
-            }}
-          >
-            Data plot
-          </ArgonButton>
-        </ArgonBox>
-      ),
+      width: 140,
+      filterable: false,
+      renderCell: ({ row }) =>
+        row.duration !== null && secondsToDuration(row.duration)
     },
   ];
 
@@ -123,16 +153,12 @@ export const Lots = () => {
         return <LotsDataPlot lotID={id} />;
       default:
         return (
-          <>
-            <Table
-              columns={columns}
-              url={
-                location.pathname === "/ongoing-lots"
-                  ? Endpoints.ongoingLots
-                  : Endpoints.historicalLots
-              }
-            />
-          </>
+          <Table
+            type="lot"
+            columns={columns}
+            url={Endpoints.lots}
+            pageSize={20}
+          />
         );
     }
   };

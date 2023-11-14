@@ -36,10 +36,11 @@ function CoverLayout({
             functions: { linearGradient, rgba },
             palette: { gradients },
           }) => image && `url(${image})`,
-          backgroundSize: "400px",
+          backgroundSize: "clamp(280px, 300px, 380px) auto",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          mixBlendMode: "darken",
+          marginBottom: 11,
+          // mixBlendMode: "darken",
         }}
       >
         <Grid

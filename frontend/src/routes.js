@@ -1,6 +1,6 @@
 import StatusReports from "pages/statusReports";
 import Statistics from "pages/statistics";
-import Technology from "pages/technology";
+import Notifications from "pages/notifications";
 import DashboardLayout from "layouts/dashboard";
 import { Navigate, useRoutes } from "react-router-dom";
 import SignIn from "layouts/authentication/sign-in";
@@ -24,7 +24,7 @@ export const routes = (loggedIn = false) => [
         element: <StatusReports />,
       },
       {
-        path: "/ongoing-lots",
+        path: "/lots",
         element: <Lots />,
       },
       {
@@ -32,20 +32,12 @@ export const routes = (loggedIn = false) => [
         element: <Lots />,
       },
       {
-        path: "/historical-lots",
-        element: <Lots />,
-      },
-      {
         path: "/statistics",
         element: <Statistics />,
       },
       {
-        path: "/technology",
-        element: <Technology />,
-      },
-      {
-        path: "/help",
-        element: <Technology />,
+        path: "/notifications",
+        element: <Notifications />,
       },
     ],
   },
